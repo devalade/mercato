@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enregistrer un joueur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        form {
+            width: 400px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 20px;
+            background-color: #2c7be5;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a5fc4;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Enregistrement d’un joueur</h2>
+
+<!--<form method="post" action="${mvc.uri('playerController#create')}">-->
+<form method="post" action="api/form/joueur/new">
+
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" name="nom" required />
+
+    <label for="prenom">Prenom</label>
+    <input type="text" id="prenom" name="prenom" required />
+
+    <label for="dateNais">Date de naissance</label>
+    <input type="date" id="dateNais" name="dateNais" required />
+
+    <label for="poste">Poste</label>
+    <select id="poste" name="poste" required>
+        <option value="">-- Choisir un poste --</option>
+        <option value="GARDIEN">Gardien</option>
+        <option value="DEFENSEUR">Défenseur</option>
+        <option value="MILIEU">Milieu</option>
+        <option value="ATTAQUANT">Attaquant</option>
+    </select>
+
+    <button type="submit">Enregistrer</button>
+
+</form>
+
+</body>
+</html>

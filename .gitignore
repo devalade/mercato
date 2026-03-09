@@ -1,0 +1,29 @@
+# Build
+/build/
+dist/
+nbproject/private/
+
+# Compiled files
+*.class
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database (if local)
+*.db
+*.sqlite
+
+# Temporary files
+*.tmp
+*.temp
