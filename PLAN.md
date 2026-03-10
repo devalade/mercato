@@ -28,9 +28,9 @@ web/
 **Livrable:** Modèle de données complet et compilable
 
 **Tâches détaillées:**
-- [ ] Créer `entity/StatutMateriel.java` (enum: EN_STOCK, AFFECTE, HORS_SERVICE, EXPIRE)
-- [ ] Créer `entity/TypeMouvement.java` (enum: ENTREE, SORTIE, AFFECTATION, RETOUR)
-- [ ] Créer `entity/Materiel.java`:
+- [x] Créer `entity/StatutMateriel.java` (enum: EN_STOCK, AFFECTE, HORS_SERVICE, EXPIRE)
+- [x] Créer `entity/TypeMouvement.java` (enum: ENTREE, SORTIE, AFFECTATION, RETOUR)
+- [x] Créer `entity/Materiel.java`:
   - @Id, @GeneratedValue
   - reference (String, unique)
   - designation (String)
@@ -41,21 +41,21 @@ web/
   - dureeVieJours (int)
   - dateExpiration (Date, calculée)
   - statut (Enum)
-- [ ] Créer `entity/Employe.java`:
+- [x] Créer `entity/Employe.java`:
   - matricule (String, unique)
   - nom, prenom
   - service (String)
-- [ ] Créer `entity/Mouvement.java`:
+- [x] Créer `entity/Mouvement.java`:
   - @ManyToOne → Materiel
   - @ManyToOne → Employe (nullable)
   - type (Enum)
   - dateMouvement (Date)
   - quantite (int)
   - commentaire (String)
-- [ ] Créer `entity/Utilisateur.java` (pour JWT auth)
+- [x] Créer `entity/Utilisateur.java` (pour JWT auth)
   - username, password, role
-- [ ] Supprimer anciennes entités: Joueur, Club, Transfert, Poste
-- [ ] Mettre à jour `persistence.xml`
+- [x] Supprimer anciennes entités: Joueur, Club, Transfert, Poste
+- [x] Mettre à jour `persistence.xml`
 
 **Validation:** `ant clean build` passe sans erreur
 
@@ -65,57 +65,57 @@ web/
 **Livrable:** Services fonctionnels avec logique métier
 
 **MaterielService.java:**
-- [ ] `creerMateriel(Materiel m)`:
+- [x] `creerMateriel(Materiel m)`:
   - Calcule dateExpiration = dateAchat + dureeVieJours
   - Persist materiel
   - Crée mouvement ENTREE automatique
   - @Transactional
-- [ ] `modifierMateriel(Long id, Materiel m)`:
+- [x] `modifierMateriel(Long id, Materiel m)`:
   - Vérifie existence
   - Met à jour champs modifiables
   - Recalcule dateExpiration si dureeVie modifiée
-- [ ] `getMateriel(Long id)` → Materiel
-- [ ] `listerMateriels()` → List<Materiel>
-- [ ] `rechercherParCategorie(String cat)` → List<Materiel>
-- [ ] `rechercherParStatut(StatutMateriel statut)` → List<Materiel>
-- [ ] `getMaterielsExpirantDans(int jours)` → List<Materiel> (pour alertes)
-- [ ] `archiverMateriel(Long id)` - statut HORS_SERVICE
+- [x] `getMateriel(Long id)` → Materiel
+- [x] `listerMateriels()` → List<Materiel>
+- [x] `rechercherParCategorie(String cat)` → List<Materiel>
+- [x] `rechercherParStatut(StatutMateriel statut)` → List<Materiel>
+- [x] `getMaterielsExpirantDans(int jours)` → List<Materiel> (pour alertes)
+- [x] `archiverMateriel(Long id)` - statut HORS_SERVICE
 
 **EmployeService.java:**
-- [ ] `creerEmploye(Employe e)`
-- [ ] `getEmploye(Long id)`
-- [ ] `listerEmployes()`
-- [ ] `rechercherParMatricule(String matricule)`
+- [x] `creerEmploye(Employe e)`
+- [x] `getEmploye(Long id)`
+- [x] `listerEmployes()`
+- [x] `rechercherParMatricule(String matricule)`
 
 **MouvementService.java:**
-- [ ] `entreeStock(Long materielId, int quantite, String commentaire)`:
+- [x] `entreeStock(Long materielId, int quantite, String commentaire)`:
   - @Transactional
   - Incrémente quantiteStock
   - Crée mouvement ENTREE
   - Met à jour statut EN_STOCK
-- [ ] `sortieStock(Long materielId, int quantite, String commentaire)`:
+- [x] `sortieStock(Long materielId, int quantite, String commentaire)`:
   - @Transactional
   - Vérifie quantiteStock >= quantite (sinon throw IllegalStateException)
   - Décrémente quantiteStock
   - Crée mouvement SORTIE
   - Si quantiteStock == 0 → statut HORS_SERVICE
-- [ ] `affecterMateriel(Long materielId, Long employeId, int quantite, String commentaire)`:
+- [x] `affecterMateriel(Long materielId, Long employeId, int quantite, String commentaire)`:
   - @Transactional
   - Vérifie stock disponible
   - Décrémente stock
   - Crée mouvement AFFECTATION
   - Met à jour statut AFFECTE
-- [ ] `retourMateriel(Long mouvementAffectationId, int quantite)`:
+- [x] `retourMateriel(Long mouvementAffectationId, int quantite)`:
   - @Transactional
   - Vérifie mouvement existe et est AFFECTATION
   - Incrémente stock
   - Crée mouvement RETOUR
-- [ ] `getHistoriqueMateriel(Long materielId)` → List<Mouvement> (order by date desc)
-- [ ] `getMouvementsParEmploye(Long employeId)` → List<Mouvement>
+- [x] `getHistoriqueMateriel(Long materielId)` → List<Mouvement> (order by date desc)
+- [x] `getMouvementsParEmploye(Long employeId)` → List<Mouvement>
 
 **UtilisateurService.java:**
-- [ ] `authentifier(String username, String password)` → Optional<Utilisateur>
-- [ ] `creerUtilisateur(String username, String password, String role)`
+- [x] `authentifier(String username, String password)` → Optional<Utilisateur>
+- [x] `creerUtilisateur(String username, String password, String role)`
 
 **Validation:** Tests manuels via main() ou simples appels
 
