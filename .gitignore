@@ -1,5 +1,6 @@
 # Build
 /build/
+target/
 dist/
 nbproject/private/
 
@@ -12,6 +13,9 @@ nbproject/private/
 .idea/
 *.iml
 .vscode/
+.classpath
+.project
+.settings/
 
 # OS
 .DS_Store
