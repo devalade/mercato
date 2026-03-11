@@ -55,14 +55,27 @@ public class MaterielService {
             throw new IllegalArgumentException("Matériel non trouvé avec l'id: " + id);
         }
         
-        existing.setReference(m.getReference());
-        existing.setDesignation(m.getDesignation());
-        existing.setCategorie(m.getCategorie());
-        existing.setDateAchat(m.getDateAchat());
-        existing.setQuantiteStock(m.getQuantiteStock());
+        // Only update fields that are provided (not null)
+        if (m.getReference() != null && !m.getReference().isEmpty()) {
+            existing.setReference(m.getReference());
+        }
+        if (m.getDesignation() != null && !m.getDesignation().isEmpty()) {
+            existing.setDesignation(m.getDesignation());
+        }
+        if (m.getCategorie() != null && !m.getCategorie().isEmpty()) {
+            existing.setCategorie(m.getCategorie());
+        }
+        if (m.getDateAchat() != null) {
+            existing.setDateAchat(m.getDateAchat());
+        }
+        if (m.getQuantiteStock() >= 0) {
+            existing.setQuantiteStock(m.getQuantiteStock());
+        }
         
-        boolean dureeVieChanged = existing.getDureeVieJours() != m.getDureeVieJours();
-        existing.setDureeVieJours(m.getDureeVieJours());
+        boolean dureeVieChanged = m.getDureeVieJours() > 0 && existing.getDureeVieJours() != m.getDureeVieJours();
+        if (m.getDureeVieJours() > 0) {
+            existing.setDureeVieJours(m.getDureeVieJours());
+        }
         
         if (dureeVieChanged && existing.getDateAchat() != null && existing.getDureeVieJours() > 0) {
             Calendar cal = Calendar.getInstance();

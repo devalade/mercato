@@ -1,6 +1,7 @@
 package web;
 
 import entity.Mouvement;
+import jakarta.ejb.EJBException;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
@@ -26,7 +27,7 @@ public class MouvementResource {
     @Path("/{id}/entree")
     public Response entreeStock(@PathParam("id") Long materielId, Map<String, Object> data) {
         try {
-            int quantite = (Integer) data.get("quantite");
+            int quantite = ((Number) data.get("quantite")).intValue();
             String commentaire = (String) data.get("commentaire");
             
             Mouvement mouvement = mouvementService.entreeStock(materielId, quantite, commentaire);
@@ -42,11 +43,19 @@ public class MouvementResource {
     @Path("/{id}/sortie")
     public Response sortieStock(@PathParam("id") Long materielId, Map<String, Object> data) {
         try {
-            int quantite = (Integer) data.get("quantite");
+            int quantite = ((Number) data.get("quantite")).intValue();
             String commentaire = (String) data.get("commentaire");
             
             Mouvement mouvement = mouvementService.sortieStock(materielId, quantite, commentaire);
             return Response.status(Response.Status.CREATED).entity(mouvement).build();
+        } catch (EJBException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IllegalArgumentException || cause instanceof IllegalStateException) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\": \"" + cause.getMessage() + "\"}")
+                        .build();
+            }
+            throw e;
         } catch (IllegalArgumentException | IllegalStateException | ClassCastException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
@@ -59,11 +68,19 @@ public class MouvementResource {
     public Response affecterMateriel(@PathParam("id") Long materielId, Map<String, Object> data) {
         try {
             Long employeId = ((Number) data.get("employeId")).longValue();
-            int quantite = (Integer) data.get("quantite");
+            int quantite = ((Number) data.get("quantite")).intValue();
             String commentaire = (String) data.get("commentaire");
             
             Mouvement mouvement = mouvementService.affecterMateriel(materielId, employeId, quantite, commentaire);
             return Response.status(Response.Status.CREATED).entity(mouvement).build();
+        } catch (EJBException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof IllegalArgumentException || cause instanceof IllegalStateException) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\": \"" + cause.getMessage() + "\"}")
+                        .build();
+            }
+            throw e;
         } catch (IllegalArgumentException | IllegalStateException | ClassCastException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
@@ -75,7 +92,7 @@ public class MouvementResource {
     @Path("/retour/{mouvementId}")
     public Response retourMateriel(@PathParam("mouvementId") Long mouvementId, Map<String, Object> data) {
         try {
-            int quantite = (Integer) data.get("quantite");
+            int quantite = ((Number) data.get("quantite")).intValue();
             
             Mouvement mouvement = mouvementService.retourMateriel(mouvementId, quantite);
             return Response.status(Response.Status.CREATED).entity(mouvement).build();

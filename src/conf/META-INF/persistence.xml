@@ -2,10 +2,13 @@
 <persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
   <persistence-unit name="mercatoPU" transaction-type="JTA">
     <jta-data-source>jdbc/mercato</jta-data-source>
+    <class>entity.Materiel</class>
+    <class>entity.Employe</class>
+    <class>entity.Mouvement</class>
+    <class>entity.Utilisateur</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
-      <property name="jakarta.persistence.sql-load-script-source" value="resources/scripts/data.sql"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
     </properties>
   </persistence-unit>
 </persistence>

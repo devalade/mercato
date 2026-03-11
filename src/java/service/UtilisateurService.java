@@ -11,7 +11,7 @@ import jakarta.ejb.Stateless;
 @Stateless
 public class UtilisateurService {
 
-    @PersistenceContext
+    @PersistenceContext(unitName = "mercatoPU")
     private EntityManager em;
 
     public Optional<Utilisateur> authentifier(String username, String password) {

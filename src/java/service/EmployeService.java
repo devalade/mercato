@@ -36,4 +36,9 @@ public class EmployeService {
         List<Employe> results = query.getResultList();
         return results.isEmpty() ? null : results.get(0);
     }
+
+    @Transactional
+    public Employe updateEmploye(Employe employe) {
+        return em.merge(employe);
+    }
 }

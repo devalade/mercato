@@ -1,0 +1,177 @@
+/* Custom CSS for Mercato Inventory System */
+
+/* Status Badge Colors */
+.badge-en-stock {
+    @apply badge badge-success;
+}
+
+.badge-affecte {
+    @apply badge badge-info;
+}
+
+.badge-hors-service {
+    @apply badge badge-error;
+}
+
+.badge-expire {
+    @apply badge badge-warning;
+}
+
+/* Movement Type Badge Colors */
+.badge-entree {
+    background-color: #22c55e;
+    color: white;
+}
+
+.badge-sortie {
+    background-color: #ef4444;
+    color: white;
+}
+
+.badge-affectation {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.badge-retour {
+    background-color: #f97316;
+    color: white;
+}
+
+/* Custom Card Styles */
+.stat-card {
+    @apply card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow duration-300;
+}
+
+.stat-card .card-body {
+    @apply p-6;
+}
+
+/* Table Styles */
+.table-compact-custom {
+    @apply table table-zebra table-compact w-full;
+}
+
+.table-compact-custom th {
+    @apply bg-base-300 font-bold text-base-content;
+}
+
+/* Form Styles */
+.form-control-custom {
+    @apply form-control w-full;
+}
+
+.form-control-custom label {
+    @apply label;
+}
+
+.form-control-custom label .label-text {
+    @apply label-text font-semibold;
+}
+
+.form-control-custom input,
+.form-control-custom select,
+.form-control-custom textarea {
+    @apply input input-bordered w-full;
+}
+
+.form-control-custom input:focus,
+.form-control-custom select:focus,
+.form-control-custom textarea:focus {
+    @apply input-primary;
+}
+
+/* Empty State */
+.empty-state {
+    @apply flex flex-col items-center justify-center p-12 text-center;
+}
+
+.empty-state i {
+    @apply text-6xl text-gray-300 mb-4;
+}
+
+.empty-state h3 {
+    @apply text-xl font-semibold text-gray-600 mb-2;
+}
+
+.empty-state p {
+    @apply text-gray-500;
+}
+
+/* Timeline Custom Styles */
+.timeline-custom {
+    @apply timeline timeline-vertical;
+}
+
+.timeline-custom .timeline-box {
+    @apply bg-base-100 shadow-md;
+}
+
+/* Alert Priority Colors */
+.alert-urgent {
+    @apply alert alert-error;
+}
+
+.alert-warning {
+    @apply alert alert-warning;
+}
+
+.alert-info {
+    @apply alert alert-info;
+}
+
+/* Page Header */
+.page-header {
+    @apply flex justify-between items-center mb-6;
+}
+
+.page-header h1 {
+    @apply text-3xl font-bold;
+}
+
+/* Action Buttons */
+.btn-action {
+    @apply btn btn-sm btn-ghost;
+}
+
+.btn-action-view {
+    @apply btn btn-sm btn-info btn-outline;
+}
+
+.btn-action-edit {
+    @apply btn btn-sm btn-warning btn-outline;
+}
+
+.btn-action-delete {
+    @apply btn btn-sm btn-error btn-outline;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+/* Print Styles */
+@media print {
+    .drawer-side,
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .drawer-content {
+        margin: 0 !important;
+    }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .page-header {
+        @apply flex-col gap-4;
+    }
+    
+    .page-header h1 {
+        @apply text-2xl;
+    }
+}

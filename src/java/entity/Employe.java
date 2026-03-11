@@ -1,5 +1,6 @@
 package entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,6 +31,7 @@ public class Employe implements Serializable {
     private String service;
 
     @OneToMany(mappedBy = "employe")
+    @JsonbTransient
     private List<Mouvement> mouvements;
 
     public Employe() {

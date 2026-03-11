@@ -188,15 +188,15 @@ web/
 ### Phase 1.5: Données SQL (30min)
 **Livrable:** data.sql prêt pour démo
 
-- [ ] 10 matériels variés:
+- [x] 10 matériels variés:
   - 3 PC portables (informatique)
   - 2 Chaises (mobilier)
   - 2 Imprimantes (bureautique)
   - 3 Autres (claviers, souris...)
-- [ ] Dates d'achat variées (certains vieux pour expiration)
-- [ ] 2 matériels avec dateExpiration dans < 60j (pour alertes)
-- [ ] 4 employés avec services variés
-- [ ] 5-6 mouvements pour traçabilité:
+- [x] Dates d'achat variées (certains vieux pour expiration)
+- [x] 2 matériels avec dateExpiration dans < 60j (pour alertes)
+- [x] 4 employés avec services variés
+- [x] 5-6 mouvements pour traçabilité:
   - ENTREE pour chaque matériel
   - AFFECTATION pour certains
   - SORTIE pour un ou deux

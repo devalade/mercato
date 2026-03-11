@@ -146,4 +146,11 @@ public class MouvementService {
         query.setParameter("employeId", employeId);
         return query.getResultList();
     }
+
+    public List<Mouvement> getAllMouvements() {
+        TypedQuery<Mouvement> query = em.createQuery(
+            "SELECT m FROM Mouvement m ORDER BY m.dateMouvement DESC",
+            Mouvement.class);
+        return query.getResultList();
+    }
 }

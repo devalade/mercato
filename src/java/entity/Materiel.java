@@ -8,9 +8,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Calendar;
@@ -24,13 +22,10 @@ public class Materiel implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "La référence est obligatoire")
     private String reference;
 
-    @NotBlank(message = "La désignation est obligatoire")
     private String designation;
 
-    @NotBlank(message = "La catégorie est obligatoire")
     private String categorie;
 
     @Temporal(TemporalType.DATE)
@@ -42,14 +37,12 @@ public class Materiel implements Serializable {
     @Min(value = 0, message = "La quantité ne peut pas être négative")
     private int quantiteStock;
 
-    @Min(value = 1, message = "La durée de vie doit être d'au moins 1 jour")
     private int dureeVieJours;
 
     @Temporal(TemporalType.DATE)
     private Date dateExpiration;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Le statut est obligatoire")
     private StatutMateriel statut;
 
     public Materiel() {
@@ -71,6 +64,12 @@ public class Materiel implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, jours);
         return dateExpiration.before(cal.getTime()) && dateExpiration.after(new Date());
+    }
+
+    public long getJoursRestants() {
+        if (dateExpiration == null) return -1;
+        long diff = dateExpiration.getTime() - new Date().getTime();
+        return diff / (1000 * 60 * 60 * 24);
     }
 
     // Getters et Setters
