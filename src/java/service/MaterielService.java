@@ -8,7 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import jakarta.ejb.Stateless;
 
@@ -20,7 +20,7 @@ public class MaterielService {
 
     @Transactional
     public Materiel creerMateriel(Materiel m) {
-        m.setDateIntroduction(LocalDate.now());
+        m.setDateIntroduction(LocalDateTime.now());
         if (m.getStatut() == null) {
             m.setStatut(StatutMateriel.EN_STOCK);
         }
@@ -36,7 +36,7 @@ public class MaterielService {
             mouvement.setMateriel(m);
             mouvement.setType(TypeMouvement.ENTREE);
             mouvement.setQuantite(m.getQuantiteStock());
-            mouvement.setDateMouvement(LocalDate.now());
+            mouvement.setDateMouvement(LocalDateTime.now());
             mouvement.setCommentaire("Entrée en stock - création du matériel");
             em.persist(mouvement);
         }
@@ -104,15 +104,14 @@ public class MaterielService {
     }
 
     public List<Materiel> getMaterielsExpirantDans(int jours) {
-        LocalDate dateLimite = LocalDate.now().plusDays(jours);
-        LocalDate maintenant = LocalDate.now();
+        LocalDateTime dateLimite = LocalDateTime.now().plusDays(jours);
 
         TypedQuery<Materiel> query = em.createQuery(
             "SELECT m FROM Materiel m WHERE m.dateExpiration IS NOT NULL " +
-            "AND m.dateExpiration <= :dateLimite AND m.dateExpiration > :maintenant " +
-            "AND m.statut != :horsService", Materiel.class);
+            "AND m.dateExpiration <= :dateLimite " +
+            "AND m.statut != :horsService " +
+            "ORDER BY m.dateExpiration ASC", Materiel.class);
         query.setParameter("dateLimite", dateLimite);
-        query.setParameter("maintenant", maintenant);
         query.setParameter("horsService", StatutMateriel.HORS_SERVICE);
         return query.getResultList();
     }

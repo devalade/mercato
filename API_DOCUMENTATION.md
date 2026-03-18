@@ -47,7 +47,16 @@ Authentifie un utilisateur et retourne un token JWT.
 
 ### GET /api/materiels
 
-Liste tous les matériels.
+Liste tous les matériels ou filtre par catégorie/statut.
+
+**Query Parameters (optionnels):**
+- `categorie` - Filtrer par catégorie (ex: Informatique)
+- `statut` - Filtrer par statut (EN_STOCK, AFFECTE, HORS_SERVICE, EXPIRE)
+
+**Exemples:**
+- `GET /api/materiels` - Liste tous les matériels
+- `GET /api/materiels?categorie=Informatique` - Filtre par catégorie
+- `GET /api/materiels?statut=EN_STOCK` - Filtre par statut
 
 **Response (200 OK):**
 ```json
@@ -57,11 +66,11 @@ Liste tous les matériels.
     "reference": "PC001",
     "designation": "PC Portable Dell Latitude",
     "categorie": "Informatique",
-    "dateIntroduction": "2025-01-15",
-    "dateAchat": "2025-01-10",
+    "dateIntroduction": "2025-01-15T00:00:00",
+    "dateAchat": "2025-01-10T00:00:00",
     "quantiteStock": 5,
     "dureeVieJours": 1095,
-    "dateExpiration": "2028-01-10",
+    "dateExpiration": "2028-01-10T00:00:00",
     "statut": "EN_STOCK"
   }
 ]
@@ -93,7 +102,7 @@ Crée un nouveau matériel.
   "reference": "PC002",
   "designation": "PC Portable HP ProBook",
   "categorie": "Informatique",
-  "dateAchat": "2025-03-10",
+  "dateAchat": "2025-03-10T00:00:00",
   "quantiteStock": 3,
   "dureeVieJours": 1095
 }
@@ -144,27 +153,15 @@ Retourne les matériels expirant dans les 60 jours.
     "id": 3,
     "reference": "IMP001",
     "designation": "Imprimante Laser",
-    "dateExpiration": "2025-04-15",
+    "dateExpiration": "2025-04-15T00:00:00",
     "joursRestants": 35
   }
 ]
 ```
 
-### GET /api/materiels/search
-
-Recherche et filtre les matériels.
-
-**Query Parameters:**
-- `categorie` (optionnel): Filtrer par catégorie
-- `statut` (optionnel): Filtrer par statut (EN_STOCK, AFFECTE, HORS_SERVICE, EXPIRE)
-
-**Exemple:** `GET /api/materiels/search?categorie=Informatique&statut=EN_STOCK`
-
----
-
 ## Mouvements
 
-### POST /api/mouvements/{materielId}/entree
+### POST /api/materiels/{materielId}/entree
 
 Enregistre une entrée en stock.
 
@@ -176,7 +173,7 @@ Enregistre une entrée en stock.
 }
 ```
 
-### POST /api/mouvements/{materielId}/sortie
+### POST /api/materiels/{materielId}/sortie
 
 Enregistre une sortie de stock.
 
@@ -195,7 +192,7 @@ Enregistre une sortie de stock.
 }
 ```
 
-### POST /api/mouvements/{materielId}/affectation
+### POST /api/materiels/{materielId}/affectation
 
 Affecte un matériel à un employé.
 
@@ -208,7 +205,7 @@ Affecte un matériel à un employé.
 }
 ```
 
-### GET /api/mouvements/{materielId}/historique
+### GET /api/materiels/{materielId}/historique
 
 Retourne l'historique des mouvements d'un matériel.
 
@@ -322,9 +319,31 @@ curl -X POST http://localhost:8080/mercato/api/materiels \
   }'
 ```
 
+### Entrée de stock
+```bash
+curl -X POST http://localhost:8080/mercato/api/materiels/1/entree \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "quantite": 5,
+    "commentaire": "Nouvelle livraison"
+  }'
+```
+
+### Sortie de stock
+```bash
+curl -X POST http://localhost:8080/mercato/api/materiels/1/sortie \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "quantite": 2,
+    "commentaire": "Sortie pour maintenance"
+  }'
+```
+
 ### Affecter un matériel
 ```bash
-curl -X POST http://localhost:8080/mercato/api/mouvements/1/affectation \
+curl -X POST http://localhost:8080/mercato/api/materiels/1/affectation \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{

@@ -435,7 +435,8 @@ Response: {"token": "eyJ...", "role": "GESTIONNAIRE"}
 
 ## Matériels
 ### GET /api/materiels
-Liste tous les matériels
+Liste tous les matériels ou filtre par catégorie/statut
+Query params optionnels: ?categorie=Informatique, ?statut=EN_STOCK
 Response: [{"id": 1, "reference": "PC001", ...}]
 
 ### GET /api/materiels/{id}
@@ -456,12 +457,6 @@ Archiver un matériel (statut HORS_SERVICE)
 ### GET /api/materiels/alertes
 Matériels expirant dans les 60 jours
 Response: Liste matériels avec dateExpiration
-
-### GET /api/materiels/search?categorie=Informatique
-Filtrer par catégorie
-
-### GET /api/materiels/search?statut=EN_STOCK
-Filtrer par statut
 
 ## Mouvements
 ### POST /api/mouvements/{id}/entree

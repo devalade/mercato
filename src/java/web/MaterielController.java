@@ -1,5 +1,6 @@
 package web;
 
+import entity.Employe;
 import entity.Materiel;
 import entity.Mouvement;
 import entity.StatutMateriel;
@@ -10,26 +11,30 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import service.EmployeService;
 import service.MaterielService;
 import service.MouvementService;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @WebServlet(name = "MaterielController", urlPatterns = {
-    "/materiels", "/materiels/new", "/materiels/create",
-    "/materiels/edit", "/materiels/update", "/materiels/delete",
-    "/materiels/detail", "/materiels/alertes"
+    "/materiels", "/materiels/*"
 })
 public class MaterielController extends HttpServlet {
 
     @Inject
     private MaterielService materielService;
-    
+
     @Inject
     private MouvementService mouvementService;
+
+    @Inject
+    private EmployeService employeService;
     
 
 
@@ -50,12 +55,36 @@ public class MaterielController extends HttpServlet {
                 listMateriels(request, response);
             } else if ("/materiels/new".equals(path)) {
                 showNewForm(request, response);
-            } else if ("/materiels/edit".equals(path) || (extraPath != null && extraPath.startsWith("/") && extraPath.length() > 1 && extraPath.contains("/edit"))) {
-                showEditForm(request, response);
-            } else if ("/materiels/detail".equals(path) || (extraPath != null && extraPath.startsWith("/") && extraPath.length() > 1 && !extraPath.contains("/edit"))) {
-                showDetail(request, response);
             } else if ("/materiels/alertes".equals(path)) {
                 showAlertes(request, response);
+            } else if (extraPath != null) {
+                // Check for /alertes path first
+                if ("/alertes".equals(extraPath)) {
+                    showAlertes(request, response);
+                } else {
+                    // Handle paths like /{id}, /{id}/edit, /{id}/sortie, /{id}/affectation
+                    String pathRemainder = extraPath.startsWith("/") ? extraPath.substring(1) : extraPath;
+
+                    if (pathRemainder.contains("/")) {
+                        String[] parts = pathRemainder.split("/", 2);
+                        String action = parts[1];
+
+                        if ("edit".equals(action)) {
+                            showEditForm(request, response);
+                        } else if ("sortie".equals(action)) {
+                            showSortieForm(request, response);
+                        } else if ("affectation".equals(action)) {
+                            showAffectationForm(request, response);
+                        } else if ("entree".equals(action)) {
+                            showEntreeForm(request, response);
+                        } else {
+                            showDetail(request, response);
+                        }
+                    } else {
+                        // Path is just /{id} - show detail
+                        showDetail(request, response);
+                    }
+                }
             } else {
                 listMateriels(request, response);
             }
@@ -75,6 +104,7 @@ public class MaterielController extends HttpServlet {
         }
         
         String path = request.getServletPath();
+        String extraPath = request.getPathInfo();
         
         try {
             if ("/materiels/create".equals(path)) {
@@ -83,6 +113,26 @@ public class MaterielController extends HttpServlet {
                 updateMateriel(request, response);
             } else if ("/materiels/delete".equals(path)) {
                 deleteMateriel(request, response);
+            } else if (extraPath != null) {
+                // Handle POST to /{id}/sortie or /{id}/affectation
+                String pathRemainder = extraPath.startsWith("/") ? extraPath.substring(1) : extraPath;
+                
+                if (pathRemainder.contains("/")) {
+                    String[] parts = pathRemainder.split("/", 2);
+                    String action = parts[1];
+                    
+                    if ("sortie".equals(action)) {
+                        doSortie(request, response);
+                    } else if ("affectation".equals(action)) {
+                        doAffectation(request, response);
+                    } else if ("entree".equals(action)) {
+                        doEntree(request, response);
+                    } else {
+                        response.sendRedirect(request.getContextPath() + "/materiels");
+                    }
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/materiels");
+                }
             } else {
                 response.sendRedirect(request.getContextPath() + "/materiels");
             }
@@ -215,11 +265,24 @@ public class MaterielController extends HttpServlet {
 
         String dateAchatStr = request.getParameter("dateAchat");
         if (dateAchatStr != null && !dateAchatStr.isEmpty()) {
-            materiel.setDateAchat(LocalDate.parse(dateAchatStr));
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate date = LocalDate.parse(dateAchatStr, formatter);
+                materiel.setDateAchat(date.atStartOfDay());
+            } catch (DateTimeParseException e) {
+                // Invalid date format, skip setting date
+            }
         }
 
-        materiel.setQuantiteStock(Integer.parseInt(request.getParameter("quantiteStock")));
-        materiel.setDureeVieJours(Integer.parseInt(request.getParameter("dureeVieJours")));
+        String quantiteStr = request.getParameter("quantiteStock");
+        if (quantiteStr != null && !quantiteStr.isEmpty()) {
+            materiel.setQuantiteStock(Integer.parseInt(quantiteStr));
+        }
+        
+        String dureeVieStr = request.getParameter("dureeVieJours");
+        if (dureeVieStr != null && !dureeVieStr.isEmpty()) {
+            materiel.setDureeVieJours(Integer.parseInt(dureeVieStr));
+        }
         materiel.setStatut(StatutMateriel.EN_STOCK);
 
         materielService.creerMateriel(materiel);
@@ -230,7 +293,22 @@ public class MaterielController extends HttpServlet {
     private void updateMateriel(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Long id = Long.parseLong(request.getParameter("id"));
+        String idStr = request.getParameter("id");
+        if (idStr == null || idStr.isEmpty()) {
+            setErrorMessage(request, "ID de matériel manquant");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+        
+        Long id;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+        
         Materiel materiel = materielService.getMateriel(id);
 
         if (materiel == null) {
@@ -244,10 +322,19 @@ public class MaterielController extends HttpServlet {
 
         String dateAchatStr = request.getParameter("dateAchat");
         if (dateAchatStr != null && !dateAchatStr.isEmpty()) {
-            materiel.setDateAchat(LocalDate.parse(dateAchatStr));
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate date = LocalDate.parse(dateAchatStr, formatter);
+                materiel.setDateAchat(date.atStartOfDay());
+            } catch (DateTimeParseException e) {
+                // Invalid date format, skip setting date
+            }
         }
 
-        materiel.setDureeVieJours(Integer.parseInt(request.getParameter("dureeVieJours")));
+        String dureeVieStr = request.getParameter("dureeVieJours");
+        if (dureeVieStr != null && !dureeVieStr.isEmpty()) {
+            materiel.setDureeVieJours(Integer.parseInt(dureeVieStr));
+        }
 
         materielService.modifierMateriel(id, materiel);
         setSuccessMessage(request, "Matériel modifié avec succès");
@@ -257,9 +344,18 @@ public class MaterielController extends HttpServlet {
     private void deleteMateriel(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        Long id = Long.parseLong(request.getParameter("id"));
-        materielService.archiverMateriel(id);
-        setSuccessMessage(request, "Matériel archivé avec succès");
+        String idStr = request.getParameter("id");
+        if (idStr != null && !idStr.isEmpty()) {
+            try {
+                Long id = Long.parseLong(idStr);
+                materielService.archiverMateriel(id);
+                setSuccessMessage(request, "Matériel archivé avec succès");
+            } catch (NumberFormatException e) {
+                setErrorMessage(request, "ID de matériel invalide");
+            }
+        } else {
+            setErrorMessage(request, "ID de matériel manquant");
+        }
         response.sendRedirect(request.getContextPath() + "/materiels");
     }
     
@@ -278,5 +374,179 @@ public class MaterielController extends HttpServlet {
     
     private String[] getCategories() {
         return new String[]{"Informatique", "Bureautique", "Mobilier", "Électronique", "Autre"};
+    }
+
+    // Movement methods
+
+    private void showSortieForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        Materiel materiel = materielService.getMateriel(materielId);
+        if (materiel == null) {
+            setErrorMessage(request, "Matériel non trouvé");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        request.setAttribute("materiel", materiel);
+        request.setAttribute("pageTitle", "Sortie de Stock");
+        request.setAttribute("contentPage", "/WEB-INF/views/mouvements/sortie.jsp");
+        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
+    }
+
+    private void showAffectationForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        Materiel materiel = materielService.getMateriel(materielId);
+        if (materiel == null) {
+            setErrorMessage(request, "Matériel non trouvé");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        List<Employe> employes = employeService.listerEmployes();
+        request.setAttribute("employes", employes);
+        request.setAttribute("materiel", materiel);
+        request.setAttribute("pageTitle", "Affectation Matériel");
+        request.setAttribute("contentPage", "/WEB-INF/views/mouvements/affectation.jsp");
+        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
+    }
+
+    private void doSortie(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        try {
+            String quantiteStr = request.getParameter("quantite");
+            String commentaire = request.getParameter("commentaire");
+
+            if (quantiteStr == null || quantiteStr.isEmpty()) {
+                setErrorMessage(request, "Quantité requise");
+                response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/sortie");
+                return;
+            }
+
+            int quantite = Integer.parseInt(quantiteStr);
+            mouvementService.sortieStock(materielId, quantite, commentaire);
+            setSuccessMessage(request, "Sortie de stock effectuée avec succès");
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        } catch (Exception e) {
+            setErrorMessage(request, "Erreur: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        }
+    }
+
+    private void doAffectation(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        try {
+            String employeIdStr = request.getParameter("employeId");
+            String quantiteStr = request.getParameter("quantite");
+            String commentaire = request.getParameter("commentaire");
+
+            if (employeIdStr == null || employeIdStr.isEmpty()) {
+                setErrorMessage(request, "Employé requis");
+                response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/affectation");
+                return;
+            }
+
+            if (quantiteStr == null || quantiteStr.isEmpty()) {
+                setErrorMessage(request, "Quantité requise");
+                response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/affectation");
+                return;
+            }
+
+            Long employeId = Long.parseLong(employeIdStr);
+            int quantite = Integer.parseInt(quantiteStr);
+
+            mouvementService.affecterMateriel(materielId, employeId, quantite, commentaire);
+            setSuccessMessage(request, "Matériel affecté avec succès");
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        } catch (Exception e) {
+            setErrorMessage(request, "Erreur: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        }
+    }
+
+    // Entree de stock methods
+
+    private void showEntreeForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        Materiel materiel = materielService.getMateriel(materielId);
+        if (materiel == null) {
+            setErrorMessage(request, "Matériel non trouvé");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        request.setAttribute("materiel", materiel);
+        request.setAttribute("pageTitle", "Entrée de Stock");
+        request.setAttribute("contentPage", "/WEB-INF/views/mouvements/entree.jsp");
+        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
+    }
+
+    private void doEntree(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        Long materielId = extractIdFromPath(request);
+        if (materielId == null) {
+            setErrorMessage(request, "ID de matériel invalide");
+            response.sendRedirect(request.getContextPath() + "/materiels");
+            return;
+        }
+
+        try {
+            String quantiteStr = request.getParameter("quantite");
+            String commentaire = request.getParameter("commentaire");
+
+            if (quantiteStr == null || quantiteStr.isEmpty()) {
+                setErrorMessage(request, "Quantité requise");
+                response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/entree");
+                return;
+            }
+
+            int quantite = Integer.parseInt(quantiteStr);
+            mouvementService.entreeStock(materielId, quantite, commentaire);
+            setSuccessMessage(request, "Entrée de stock effectuée avec succès");
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        } catch (Exception e) {
+            setErrorMessage(request, "Erreur: " + e.getMessage());
+            response.sendRedirect(request.getContextPath() + "/materiels/" + materielId + "/detail");
+        }
     }
 }

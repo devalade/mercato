@@ -26,7 +26,21 @@ public class MaterielResource {
     private MaterielService materielService;
 
     @GET
-    public List<Materiel> listerMateriels() {
+    public List<Materiel> listerMateriels(
+            @QueryParam("categorie") String categorie,
+            @QueryParam("statut") String statut) {
+        
+        if (categorie != null && !categorie.isEmpty()) {
+            return materielService.rechercherParCategorie(categorie);
+        }
+        if (statut != null && !statut.isEmpty()) {
+            try {
+                StatutMateriel stat = StatutMateriel.valueOf(statut);
+                return materielService.rechercherParStatut(stat);
+            } catch (IllegalArgumentException e) {
+                return List.of();
+            }
+        }
         return materielService.listerMateriels();
     }
 
@@ -84,25 +98,5 @@ public class MaterielResource {
     @Path("/alertes")
     public List<Materiel> getAlertes() {
         return materielService.getMaterielsExpirantDans(60);
-    }
-
-    @GET
-    @Path("/search")
-    public List<Materiel> rechercher(
-            @QueryParam("categorie") String categorie,
-            @QueryParam("statut") String statut) {
-        
-        if (categorie != null && !categorie.isEmpty()) {
-            return materielService.rechercherParCategorie(categorie);
-        }
-        if (statut != null && !statut.isEmpty()) {
-            try {
-                StatutMateriel stat = StatutMateriel.valueOf(statut);
-                return materielService.rechercherParStatut(stat);
-            } catch (IllegalArgumentException e) {
-                return List.of();
-            }
-        }
-        return materielService.listerMateriels();
     }
 }

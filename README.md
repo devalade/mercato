@@ -188,13 +188,13 @@ La documentation complète de l'API REST est disponible dans [API_DOCUMENTATION.
 Points d'entrée principaux :
 
 - `POST /api/auth/login` - Authentification
-- `GET /api/materiels` - Liste des matériels
+- `GET /api/materiels` - Liste des matériels (avec filtres optionnels: ?categorie=, ?statut=)
 - `POST /api/materiels` - Créer un matériel
 - `GET /api/materiels/{id}` - Détail d'un matériel
-- `POST /api/mouvements/{id}/entree` - Entrée de stock
-- `POST /api/mouvements/{id}/sortie` - Sortie de stock
-- `POST /api/mouvements/{id}/affectation` - Affectation à un employé
-- `GET /api/mouvements/{id}/historique` - Historique des mouvements
+- `POST /api/materiels/{id}/entree` - Entrée de stock
+- `POST /api/materiels/{id}/sortie` - Sortie de stock
+- `POST /api/materiels/{id}/affectation` - Affectation à un employé
+- `GET /api/materiels/{id}/historique` - Historique des mouvements
 - `GET /api/employes` - Liste des employés
 - `POST /api/employes` - Créer un employé
 

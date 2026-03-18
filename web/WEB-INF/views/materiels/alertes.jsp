@@ -68,7 +68,14 @@
                                         <span class="badge badge-outline">${materiel.quantiteStock}</span>
                                     </td>
                                     <td>
-                                        <fmt:formatDate value="${materiel.dateExpiration}" pattern="dd/MM/yyyy" />
+                                        <c:choose>
+                                            <c:when test="${materiel.dateExpiration != null}">
+                                                <t:formatDateTime date="${materiel.dateExpiration}" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="text-base-content/40">-</span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                     <td>
                                         <c:set var="joursRestants" value="${materiel.getJoursRestants()}" />

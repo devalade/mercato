@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import service.MouvementService;
 
-@Path("/mouvements")
+@Path("/materiels")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class MouvementResource {

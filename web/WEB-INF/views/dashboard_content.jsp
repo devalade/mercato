@@ -122,7 +122,14 @@
                                 <td>${materiel.designation}</td>
                                 <td><span class="badge badge-ghost">${materiel.categorie}</span></td>
                                 <td>
-                                    <fmt:formatDate value="${materiel.dateExpiration}" pattern="dd/MM/yyyy" />
+                                    <c:choose>
+                                        <c:when test="${materiel.dateExpiration != null}">
+                                            <t:formatDateTime date="${materiel.dateExpiration}" />
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="text-base-content/40">-</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </td>
                                 <td>
                                     <c:set var="joursRestants" value="${materiel.getJoursRestants()}" />
@@ -237,7 +244,14 @@
                                         <p class="text-sm text-base-content/60">
                                             <t:movementBadge type="${mouvement.type}" />
                                             <span class="mx-1">•</span>
-                                            <fmt:formatDate value="${mouvement.dateMouvement}" pattern="dd/MM/yy" />
+                                            <c:choose>
+                                                <c:when test="${mouvement.dateMouvement != null}">
+                                                    <t:formatDateTime date="${mouvement.dateMouvement}" pattern="dd/MM/yy HH:mm" />
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="text-base-content/40">-</span>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </p>
                                     </div>
                                     <span class="badge badge-ghost">${mouvement.quantite}</span>

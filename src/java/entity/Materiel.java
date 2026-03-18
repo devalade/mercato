@@ -9,7 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Min;
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Entity
@@ -27,25 +27,25 @@ public class Materiel implements Serializable {
 
     private String categorie;
 
-    @JsonbDateFormat(value = "yyyy-MM-dd")
-    private LocalDate dateIntroduction;
+    @JsonbDateFormat(value = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dateIntroduction;
 
-    @JsonbDateFormat(value = "yyyy-MM-dd")
-    private LocalDate dateAchat;
+    @JsonbDateFormat(value = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dateAchat;
 
     @Min(value = 0, message = "La quantité ne peut pas être négative")
     private int quantiteStock;
 
     private int dureeVieJours;
 
-    @JsonbDateFormat(value = "yyyy-MM-dd")
-    private LocalDate dateExpiration;
+    @JsonbDateFormat(value = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime dateExpiration;
 
     @Enumerated(EnumType.STRING)
     private StatutMateriel statut;
 
     public Materiel() {
-        this.dateIntroduction = LocalDate.now();
+        this.dateIntroduction = LocalDateTime.now();
         this.statut = StatutMateriel.EN_STOCK;
     }
 
@@ -57,14 +57,14 @@ public class Materiel implements Serializable {
 
     public boolean estExpirantDans(int jours) {
         if (dateExpiration == null) return false;
-        LocalDate now = LocalDate.now();
-        LocalDate future = now.plusDays(jours);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime future = now.plusDays(jours);
         return !dateExpiration.isAfter(future) && dateExpiration.isAfter(now);
     }
 
     public long getJoursRestants() {
         if (dateExpiration == null) return -1;
-        return ChronoUnit.DAYS.between(LocalDate.now(), dateExpiration);
+        return ChronoUnit.DAYS.between(LocalDateTime.now(), dateExpiration);
     }
 
     // Getters et Setters
@@ -100,19 +100,19 @@ public class Materiel implements Serializable {
         this.categorie = categorie;
     }
 
-    public LocalDate getDateIntroduction() {
+    public LocalDateTime getDateIntroduction() {
         return dateIntroduction;
     }
 
-    public void setDateIntroduction(LocalDate dateIntroduction) {
+    public void setDateIntroduction(LocalDateTime dateIntroduction) {
         this.dateIntroduction = dateIntroduction;
     }
 
-    public LocalDate getDateAchat() {
+    public LocalDateTime getDateAchat() {
         return dateAchat;
     }
 
-    public void setDateAchat(LocalDate dateAchat) {
+    public void setDateAchat(LocalDateTime dateAchat) {
         this.dateAchat = dateAchat;
     }
 
@@ -132,11 +132,11 @@ public class Materiel implements Serializable {
         this.dureeVieJours = dureeVieJours;
     }
 
-    public LocalDate getDateExpiration() {
+    public LocalDateTime getDateExpiration() {
         return dateExpiration;
     }
 
-    public void setDateExpiration(LocalDate dateExpiration) {
+    public void setDateExpiration(LocalDateTime dateExpiration) {
         this.dateExpiration = dateExpiration;
     }
 

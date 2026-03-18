@@ -54,7 +54,7 @@
                         <p class="font-semibold">
                             <c:choose>
                                 <c:when test="${materiel.dateAchat != null}">
-                                    <fmt:formatDate value="${materiel.dateAchat}" pattern="dd/MM/yyyy" />
+                                    <t:formatDateTime date="${materiel.dateAchat}" />
                                 </c:when>
                                 <c:otherwise>-</c:otherwise>
                             </c:choose>
@@ -76,7 +76,7 @@
                         <c:when test="${materiel.dateExpiration != null}">
                             <div class="flex items-center gap-4">
                                 <p class="text-lg font-medium">
-                                    <fmt:formatDate value="${materiel.dateExpiration}" pattern="dd/MM/yyyy" />
+                                    <t:formatDateTime date="${materiel.dateExpiration}" />
                                 </p>
                                 <c:set var="joursRestants" value="${materiel.getJoursRestants()}" />
                                 <span class="badge badge-lg ${joursRestants < 30 ? 'badge-error' : (joursRestants < 60 ? 'badge-warning' : 'badge-success')}">
@@ -143,7 +143,7 @@
                                             <div>
                                                 <t:movementBadge type="${mouvement.type}" />
                                                 <p class="text-sm text-base-content/60 mt-1">
-                                                    <fmt:formatDate value="${mouvement.dateMouvement}" pattern="dd/MM/yyyy HH:mm" />
+                                                    <t:formatDateTime date="${mouvement.dateMouvement}" />
                                                 </p>
                                                 <c:if test="${not empty mouvement.employe}">
                                                     <p class="text-sm text-info mt-1 flex items-center gap-1">
@@ -180,6 +180,12 @@
                 </h2>
                 
                 <div class="space-y-2 mt-4">
+                    <a href="${pageContext.request.contextPath}/materiels/${materiel.id}/entree" 
+                       class="btn btn-success w-full justify-start gap-2">
+                        <i class="fas fa-arrow-down"></i>
+                        Entrée de stock
+                    </a>
+                    
                     <c:if test="${materiel.quantiteStock > 0}">
                         <a href="${pageContext.request.contextPath}/materiels/${materiel.id}/sortie" 
                            class="btn btn-error w-full justify-start gap-2">

@@ -133,7 +133,7 @@
                                         <c:choose>
                                             <c:when test="${materiel.dateExpiration != null}">
                                                 <div class="flex items-center gap-2">
-                                                    <fmt:formatDate value="${materiel.dateExpiration}" pattern="dd/MM/yy" />
+                                                    <t:formatDateTime date="${materiel.dateExpiration}" pattern="dd/MM/yy HH:mm" />
                                                     <c:set var="joursRestants" value="${materiel.getJoursRestants()}" />
                                                     <c:if test="${joursRestants >= 0 && joursRestants <= 60}">
                                                         <span class="badge badge-xs ${joursRestants < 30 ? 'badge-error' : 'badge-warning'}">

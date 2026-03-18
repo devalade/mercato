@@ -92,7 +92,7 @@
                             <span class="label-text">Date d'achat</span>
                         </label>
                         <input type="date" name="dateAchat" 
-                               value="${materiel.dateAchat != null ? materiel.dateAchat : ''}" 
+                               value="${materiel.dateAchat != null ? materiel.dateAchat.toLocalDate() : ''}" 
                                class="input input-bordered w-full" />
                     </div>
                 </div>
@@ -142,7 +142,7 @@
                     <div>
                         <p class="font-medium">Date d'expiration calculée</p>
                         <p class="text-sm">
-                            <fmt:formatDate value="${materiel.dateExpiration}" pattern="dd/MM/yyyy" />
+                            <t:formatDateTime date="${materiel.dateExpiration}" />
                             <span class="mx-2">•</span>
                             <span class="${materiel.getJoursRestants() < 30 ? 'text-error font-medium' : ''}">
                                 ${materiel.getJoursRestants()} jours restants

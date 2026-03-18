@@ -87,7 +87,7 @@
                                                     <p class="text-sm text-base-content/60 font-mono">${mouvement.materiel.reference}</p>
                                                     <p class="text-sm text-base-content/50 mt-1">
                                                         <i class="fas fa-calendar mr-1"></i>
-                                                        <fmt:formatDate value="${mouvement.dateMouvement}" pattern="dd/MM/yyyy" />
+                                                        <t:formatDateTime date="${mouvement.dateMouvement}" />
                                                     </p>
                                                 </div>
                                                 <span class="badge badge-info">Qté: ${mouvement.quantite}</span>
