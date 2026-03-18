@@ -3,25 +3,34 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 
+<!-- Page Header -->
 <div class="page-header">
-    <div>
-        <h1 class="text-3xl font-bold mb-2">
-            <i class="fas fa-users text-primary mr-3"></i>
-            Liste des Employés
-        </h1>
-        <p class="text-gray-600">Gérez le personnel de l'entreprise</p>
+    <div class="page-header-title">
+        <div class="icon-wrapper">
+            <i class="fas fa-users text-xl"></i>
+        </div>
+        <div>
+            <h1>Liste des Employés</h1>
+            <p class="page-header-subtitle">Gérez le personnel de l'entreprise</p>
+        </div>
     </div>
-    <t:button href="${pageContext.request.contextPath}/employes/new" variant="primary" icon="fa-plus">
-        Nouvel Employé
-    </t:button>
+    <div class="page-header-actions">
+        <a href="${pageContext.request.contextPath}/employes/new" class="btn btn-primary btn-sm gap-2">
+            <i class="fas fa-plus"></i>
+            <span class="hidden sm:inline">Nouvel Employé</span>
+        </a>
+    </div>
 </div>
 
-<div class="card bg-base-100 shadow-xl">
+<!-- Employees Table -->
+<div class="card-clean">
     <div class="card-body">
         <c:choose>
             <c:when test="${empty employes}">
                 <div class="empty-state">
-                    <i class="fas fa-users-slash"></i>
+                    <div class="empty-state-icon">
+                        <i class="fas fa-users-slash"></i>
+                    </div>
                     <h3>Aucun employé enregistré</h3>
                     <p>Commencez par ajouter un nouvel employé</p>
                     <a href="${pageContext.request.contextPath}/employes/new" class="btn btn-primary mt-4">
@@ -31,33 +40,33 @@
             </c:when>
             <c:otherwise>
                 <div class="overflow-x-auto">
-                    <table class="table table-zebra w-full">
+                    <table class="table-clean">
                         <thead>
                             <tr>
                                 <th>Matricule</th>
                                 <th>Nom</th>
                                 <th>Prénom</th>
                                 <th>Service</th>
-                                <th class="text-center">Actions</th>
+                                <th class="text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach items="${employes}" var="employe">
-                                <tr class="hover">
-                                    <td class="font-mono font-semibold">${employe.matricule}</td>
-                                    <td>${employe.nom}</td>
+                                <tr>
+                                    <td class="font-mono font-medium">${employe.matricule}</td>
+                                    <td class="font-medium">${employe.nom}</td>
                                     <td>${employe.prenom}</td>
                                     <td>
                                         <span class="badge badge-ghost">${employe.service}</span>
                                     </td>
                                     <td>
-                                        <div class="flex justify-center gap-2">
+                                        <div class="flex justify-end gap-1">
                                             <a href="${pageContext.request.contextPath}/employes/${employe.id}" 
-                                               class="btn btn-sm btn-info btn-outline" title="Détail">
+                                               class="btn btn-sm btn-ghost text-info" title="Détail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <a href="${pageContext.request.contextPath}/employes/${employe.id}/edit" 
-                                               class="btn btn-sm btn-warning btn-outline" title="Modifier">
+                                               class="btn btn-sm btn-ghost text-warning" title="Modifier">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         </div>
@@ -68,9 +77,11 @@
                     </table>
                 </div>
                 
-                <div class="flex justify-between items-center mt-4">
-                    <p class="text-sm text-gray-500">
-                        Affichage de ${employes.size()} employé(s)
+                <!-- Results Summary -->
+                <div class="flex justify-between items-center mt-4 pt-4 border-t border-base-200">
+                    <p class="text-sm text-base-content/60">
+                        <i class="fas fa-users mr-1"></i>
+                        ${employes.size()} employé(s) enregistré(s)
                     </p>
                 </div>
             </c:otherwise>

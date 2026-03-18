@@ -9,7 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.ejb.Stateless;
 
@@ -34,7 +34,7 @@ public class MouvementService {
         mouvement.setMateriel(materiel);
         mouvement.setType(TypeMouvement.ENTREE);
         mouvement.setQuantite(quantite);
-        mouvement.setDateMouvement(new Date());
+        mouvement.setDateMouvement(LocalDate.now());
         mouvement.setCommentaire(commentaire);
         
         em.persist(mouvement);
@@ -64,7 +64,7 @@ public class MouvementService {
         mouvement.setMateriel(materiel);
         mouvement.setType(TypeMouvement.SORTIE);
         mouvement.setQuantite(quantite);
-        mouvement.setDateMouvement(new Date());
+        mouvement.setDateMouvement(LocalDate.now());
         mouvement.setCommentaire(commentaire);
         
         em.persist(mouvement);
@@ -96,7 +96,7 @@ public class MouvementService {
         mouvement.setEmploye(employe);
         mouvement.setType(TypeMouvement.AFFECTATION);
         mouvement.setQuantite(quantite);
-        mouvement.setDateMouvement(new Date());
+        mouvement.setDateMouvement(LocalDate.now());
         mouvement.setCommentaire(commentaire);
         
         em.persist(mouvement);
@@ -124,7 +124,7 @@ public class MouvementService {
         mouvementRetour.setEmploye(mouvementAffectation.getEmploye());
         mouvementRetour.setType(TypeMouvement.RETOUR);
         mouvementRetour.setQuantite(quantite);
-        mouvementRetour.setDateMouvement(new Date());
+        mouvementRetour.setDateMouvement(LocalDate.now());
         mouvementRetour.setCommentaire("Retour du matériel - REF: " + mouvementAffectation.getId());
         
         em.persist(mouvementRetour);

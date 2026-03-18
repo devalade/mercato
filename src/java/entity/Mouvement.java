@@ -1,5 +1,6 @@
 package entity;
 
+import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,12 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 public class Mouvement implements Serializable {
@@ -27,8 +26,8 @@ public class Mouvement implements Serializable {
     @NotNull(message = "Le type de mouvement est obligatoire")
     private TypeMouvement type;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dateMouvement;
+    @JsonbDateFormat(value = "yyyy-MM-dd")
+    private LocalDate dateMouvement;
 
     @Min(value = 1, message = "La quantité doit être d'au moins 1")
     private int quantite;
@@ -43,7 +42,7 @@ public class Mouvement implements Serializable {
     private String commentaire;
 
     public Mouvement() {
-        this.dateMouvement = new Date();
+        this.dateMouvement = LocalDate.now();
     }
 
     // Getters et Setters
@@ -63,11 +62,11 @@ public class Mouvement implements Serializable {
         this.type = type;
     }
 
-    public Date getDateMouvement() {
+    public LocalDate getDateMouvement() {
         return dateMouvement;
     }
 
-    public void setDateMouvement(Date dateMouvement) {
+    public void setDateMouvement(LocalDate dateMouvement) {
         this.dateMouvement = dateMouvement;
     }
 

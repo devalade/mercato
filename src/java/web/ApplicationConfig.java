@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author AnsaEssilfieJohnson
  */
-@jakarta.ws.rs.ApplicationPath("api")
+@jakarta.ws.rs.ApplicationPath("/api")
 public class ApplicationConfig extends jakarta.ws.rs.core.Application {
 
     @Override
@@ -48,9 +48,7 @@ public class ApplicationConfig extends jakarta.ws.rs.core.Application {
         private final Jsonb jsonb;
         
         public JsonbConfigProvider() {
-            JsonbConfig config = new JsonbConfig()
-                .withDateFormat("yyyy-MM-dd'T'HH:mm:ss", null)
-                .setProperty("yasson.zero.time.parse.defaulting", true);
+            JsonbConfig config = new JsonbConfig();
             this.jsonb = JsonbBuilder.create(config);
         }
         

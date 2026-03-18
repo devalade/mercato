@@ -1,15 +1,49 @@
 <!DOCTYPE html>
-<!--
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Html.html to edit this template
--->
-<html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <div>TODO write content</div>
-    </body>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercato - Système de Gestion d'Inventaire</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+    <meta http-equiv="refresh" content="0;url=./dashboard">
+</head>
+<body class="hero-gradient min-h-screen">
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <!-- Loading Spinner -->
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur rounded-2xl mb-6">
+                <i class="fas fa-boxes text-4xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Mercato</h1>
+            <p class="text-white/80 mb-6">Système de Gestion d'Inventaire</p>
+            <div class="flex items-center justify-center gap-2 text-white/60">
+                <span class="loading loading-spinner loading-sm"></span>
+                <span>Chargement...</span>
+            </div>
+        </div>
+        
+        <!-- Manual Navigation -->
+        <div class="mt-8 text-center">
+            <p class="text-white/60 text-sm mb-3">Redirection automatique en cours...</p>
+            <a href="./login" class="btn btn-ghost text-white gap-2">
+                <i class="fas fa-sign-in-alt"></i>
+                Accéder à l'application
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Fallback redirect after 3 seconds if meta refresh doesn't work
+        setTimeout(function() {
+            window.location.href = './dashboard';
+        }, 3000);
+    </script>
+</body>
 </html>

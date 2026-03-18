@@ -1,17 +1,16 @@
 package entity;
 
+import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Min;
 import java.io.Serializable;
-import java.util.Date;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 public class Materiel implements Serializable {
@@ -28,48 +27,44 @@ public class Materiel implements Serializable {
 
     private String categorie;
 
-    @Temporal(TemporalType.DATE)
-    private Date dateIntroduction;
+    @JsonbDateFormat(value = "yyyy-MM-dd")
+    private LocalDate dateIntroduction;
 
-    @Temporal(TemporalType.DATE)
-    private Date dateAchat;
+    @JsonbDateFormat(value = "yyyy-MM-dd")
+    private LocalDate dateAchat;
 
     @Min(value = 0, message = "La quantité ne peut pas être négative")
     private int quantiteStock;
 
     private int dureeVieJours;
 
-    @Temporal(TemporalType.DATE)
-    private Date dateExpiration;
+    @JsonbDateFormat(value = "yyyy-MM-dd")
+    private LocalDate dateExpiration;
 
     @Enumerated(EnumType.STRING)
     private StatutMateriel statut;
 
     public Materiel() {
-        this.dateIntroduction = new Date();
+        this.dateIntroduction = LocalDate.now();
         this.statut = StatutMateriel.EN_STOCK;
     }
 
     public void calculerDateExpiration() {
         if (dateAchat != null && dureeVieJours > 0) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(dateAchat);
-            cal.add(Calendar.DAY_OF_MONTH, dureeVieJours);
-            this.dateExpiration = cal.getTime();
+            this.dateExpiration = dateAchat.plusDays(dureeVieJours);
         }
     }
 
     public boolean estExpirantDans(int jours) {
         if (dateExpiration == null) return false;
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, jours);
-        return dateExpiration.before(cal.getTime()) && dateExpiration.after(new Date());
+        LocalDate now = LocalDate.now();
+        LocalDate future = now.plusDays(jours);
+        return !dateExpiration.isAfter(future) && dateExpiration.isAfter(now);
     }
 
     public long getJoursRestants() {
         if (dateExpiration == null) return -1;
-        long diff = dateExpiration.getTime() - new Date().getTime();
-        return diff / (1000 * 60 * 60 * 24);
+        return ChronoUnit.DAYS.between(LocalDate.now(), dateExpiration);
     }
 
     // Getters et Setters
@@ -105,19 +100,19 @@ public class Materiel implements Serializable {
         this.categorie = categorie;
     }
 
-    public Date getDateIntroduction() {
+    public LocalDate getDateIntroduction() {
         return dateIntroduction;
     }
 
-    public void setDateIntroduction(Date dateIntroduction) {
+    public void setDateIntroduction(LocalDate dateIntroduction) {
         this.dateIntroduction = dateIntroduction;
     }
 
-    public Date getDateAchat() {
+    public LocalDate getDateAchat() {
         return dateAchat;
     }
 
-    public void setDateAchat(Date dateAchat) {
+    public void setDateAchat(LocalDate dateAchat) {
         this.dateAchat = dateAchat;
     }
 
@@ -137,11 +132,11 @@ public class Materiel implements Serializable {
         this.dureeVieJours = dureeVieJours;
     }
 
-    public Date getDateExpiration() {
+    public LocalDate getDateExpiration() {
         return dateExpiration;
     }
 
-    public void setDateExpiration(Date dateExpiration) {
+    public void setDateExpiration(LocalDate dateExpiration) {
         this.dateExpiration = dateExpiration;
     }
 

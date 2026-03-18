@@ -1,4 +1,4 @@
-.PHONY: build clean run server-start server-stop deploy undeploy test db-start db-stop help
+.PHONY: build clean run server-start server-stop deploy redeploy undeploy test db-start db-stop help
 
 # Configuration
 GLASSFISH_VERSION=7.1.0
@@ -23,6 +23,7 @@ help:
 	@echo "  make server-start - Download and start GlassFish 7"
 	@echo "  make server-stop  - Stop GlassFish server"
 	@echo "  make deploy       - Deploy application to GlassFish"
+	@echo "  make redeploy     - Redeploy application to GlassFish"
 	@echo "  make undeploy     - Undeploy application from GlassFish"
 	@echo "  make run          - Start DB, deploy and run the app"
 	@echo "  make test         - Run unit tests"
@@ -92,30 +93,48 @@ server-status:
 
 deploy: build
 	@echo "Deploying application to GlassFish..."
-	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot / target/$(APP_NAME).war
+	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot /mercato target/$(APP_NAME).war
+
+redeploy: build
+	@echo "Redeploying application to GlassFish..."
+	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin undeploy $(APP_NAME) 2>/dev/null || true
+	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot /mercato target/$(APP_NAME).war
+	@echo "Application redeployed successfully!"
 
 deploy-force: build
 	@echo "Force deploying application to GlassFish..."
 	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin undeploy $(APP_NAME) 2>/dev/null || true
-	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot / target/$(APP_NAME).war
+	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot /mercato target/$(APP_NAME).war
 
 undeploy:
 	@echo "Undeploying application..."
 	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin undeploy $(APP_NAME) 2>/dev/null || echo "Application not deployed"
 
-run:
+run: build db-start
 	@echo "Starting the application..."
 	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin start-domain domain1 2>/dev/null || true
+	@echo "Waiting for GlassFish admin to be ready..."
+	@for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do \
+		if $(GLASSFISH_DIR)/glassfish7/bin/asadmin list-commands 2>&1 | grep -q "create-jdbc-connection-pool"; then \
+			echo "GlassFish admin is ready!"; \
+			break; \
+		fi; \
+		echo "Waiting for admin listener... ($$i/15)"; \
+		sleep 2; \
+	done
+	@echo "Configuring JDBC resources..."
 	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin create-jdbc-connection-pool \
 		--restype javax.sql.DataSource \
 		--datasourceclassname org.postgresql.ds.PGSimpleDataSource \
 		--property "user=$(DB_USER):password=$(DB_PASSWORD):serverName=localhost:portNumber=5432:databaseName=$(DB_NAME)" \
-		jdbc/mercato-pool || true
+		jdbc/mercato-pool 2>/dev/null || echo "Connection pool may already exist"
 	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin create-jdbc-resource \
 		--connectionpoolid jdbc/mercato-pool \
-		jdbc/mercato || true
-	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot / target/$(APP_NAME).war
+		jdbc/mercato 2>/dev/null || echo "JDBC resource may already exist"
+	@echo "Deploying application..."
+	@$(GLASSFISH_DIR)/glassfish7/bin/asadmin deploy --contextroot /mercato target/$(APP_NAME).war
 	@echo ""
 	@echo "Application deployed!"
-	@echo "Access the app at: http://localhost:8080/"
+	@echo "Access the app at: http://localhost:8080/mercato/"
+	@echo "API base URL: http://localhost:8080/mercato/api/"
 	@echo "GlassFish Admin Console: http://localhost:4848/"

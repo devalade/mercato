@@ -8,8 +8,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import jakarta.ejb.Stateless;
 
@@ -21,30 +20,27 @@ public class MaterielService {
 
     @Transactional
     public Materiel creerMateriel(Materiel m) {
-        m.setDateIntroduction(new Date());
+        m.setDateIntroduction(LocalDate.now());
         if (m.getStatut() == null) {
             m.setStatut(StatutMateriel.EN_STOCK);
         }
-        
+
         if (m.getDateAchat() != null && m.getDureeVieJours() > 0) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(m.getDateAchat());
-            cal.add(Calendar.DAY_OF_MONTH, m.getDureeVieJours());
-            m.setDateExpiration(cal.getTime());
+            m.setDateExpiration(m.getDateAchat().plusDays(m.getDureeVieJours()));
         }
-        
+
         em.persist(m);
-        
+
         if (m.getQuantiteStock() > 0) {
             Mouvement mouvement = new Mouvement();
             mouvement.setMateriel(m);
             mouvement.setType(TypeMouvement.ENTREE);
             mouvement.setQuantite(m.getQuantiteStock());
-            mouvement.setDateMouvement(new Date());
+            mouvement.setDateMouvement(LocalDate.now());
             mouvement.setCommentaire("Entrée en stock - création du matériel");
             em.persist(mouvement);
         }
-        
+
         return m;
     }
 
@@ -54,7 +50,7 @@ public class MaterielService {
         if (existing == null) {
             throw new IllegalArgumentException("Matériel non trouvé avec l'id: " + id);
         }
-        
+
         // Only update fields that are provided (not null)
         if (m.getReference() != null && !m.getReference().isEmpty()) {
             existing.setReference(m.getReference());
@@ -71,19 +67,16 @@ public class MaterielService {
         if (m.getQuantiteStock() >= 0) {
             existing.setQuantiteStock(m.getQuantiteStock());
         }
-        
+
         boolean dureeVieChanged = m.getDureeVieJours() > 0 && existing.getDureeVieJours() != m.getDureeVieJours();
         if (m.getDureeVieJours() > 0) {
             existing.setDureeVieJours(m.getDureeVieJours());
         }
-        
+
         if (dureeVieChanged && existing.getDateAchat() != null && existing.getDureeVieJours() > 0) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(existing.getDateAchat());
-            cal.add(Calendar.DAY_OF_MONTH, existing.getDureeVieJours());
-            existing.setDateExpiration(cal.getTime());
+            existing.setDateExpiration(existing.getDateAchat().plusDays(existing.getDureeVieJours()));
         }
-        
+
         return em.merge(existing);
     }
 
@@ -111,11 +104,9 @@ public class MaterielService {
     }
 
     public List<Materiel> getMaterielsExpirantDans(int jours) {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, jours);
-        Date dateLimite = cal.getTime();
-        Date maintenant = new Date();
-        
+        LocalDate dateLimite = LocalDate.now().plusDays(jours);
+        LocalDate maintenant = LocalDate.now();
+
         TypedQuery<Materiel> query = em.createQuery(
             "SELECT m FROM Materiel m WHERE m.dateExpiration IS NOT NULL " +
             "AND m.dateExpiration <= :dateLimite AND m.dateExpiration > :maintenant " +

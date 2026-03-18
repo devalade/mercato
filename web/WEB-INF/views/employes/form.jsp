@@ -6,22 +6,29 @@
 <c:set var="isEdit" value="${not empty employe}" />
 <c:set var="pageTitle" value="${isEdit ? 'Modifier Employé' : 'Nouvel Employé'}" />
 
+<!-- Page Header -->
 <div class="page-header">
-    <div>
-        <h1 class="text-3xl font-bold mb-2">
-            <i class="fas fa-${isEdit ? 'edit' : 'user-plus'} text-primary mr-3"></i>
-            ${pageTitle}
-        </h1>
-        <p class="text-gray-600">
-            ${isEdit ? 'Modifiez les informations de l\'employé' : 'Ajoutez un nouvel employé'}
-        </p>
+    <div class="page-header-title">
+        <div class="icon-wrapper">
+            <i class="fas fa-${isEdit ? 'edit' : 'user-plus'} text-xl"></i>
+        </div>
+        <div>
+            <h1>${pageTitle}</h1>
+            <p class="page-header-subtitle">
+                ${isEdit ? 'Modifiez les informations de l\'employé' : 'Ajoutez un nouvel employé'}
+            </p>
+        </div>
     </div>
-    <t:button href="${pageContext.request.contextPath}/employes" variant="ghost" icon="fa-arrow-left">
-        Retour à la liste
-    </t:button>
+    <div class="page-header-actions">
+        <a href="${pageContext.request.contextPath}/employes" class="btn btn-ghost btn-sm gap-2">
+            <i class="fas fa-arrow-left"></i>
+            Retour
+        </a>
+    </div>
 </div>
 
-<div class="card bg-base-100 shadow-xl max-w-2xl mx-auto">
+<!-- Form Card -->
+<div class="card-clean max-w-2xl mx-auto">
     <div class="card-body">
         <form action="${pageContext.request.contextPath}/employes/${isEdit ? 'update' : 'create'}" 
               method="post" class="space-y-6">
@@ -30,61 +37,71 @@
                 <input type="hidden" name="id" value="${employe.id}" />
             </c:if>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Matricule -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Matricule *</span>
-                    </label>
-                    <input type="text" name="matricule" value="${employe.matricule}" 
-                           class="input input-bordered w-full font-mono" 
-                           placeholder="Ex: EMP001" required
-                           ${isEdit ? 'readonly' : ''} />
-                    <label class="label">
-                        <span class="label-text-alt">Identifiant unique de l'employé</span>
-                    </label>
-                </div>
-                
-                <!-- Service -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Service *</span>
-                    </label>
-                    <input type="text" name="service" value="${employe.service}" 
-                           class="input input-bordered w-full" 
-                           placeholder="Ex: Informatique" required />
+            <!-- Section: Identification -->
+            <div>
+                <h3 class="text-sm font-semibold text-base-content/60 uppercase tracking-wide mb-4">
+                    <i class="fas fa-fingerprint mr-1"></i>Identification
+                </h3>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="label">
+                            <span class="label-text">Matricule <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="matricule" value="${employe.matricule}" 
+                               class="input input-bordered w-full font-mono bg-base-200" 
+                               placeholder="Ex: EMP-001" required
+                               ${isEdit ? 'readonly' : ''} />
+                        <label class="label">
+                            <span class="label-text-alt">Identifiant unique de l'employé</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="label">
+                            <span class="label-text">Service <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="service" value="${employe.service}" 
+                               class="input input-bordered w-full" 
+                               placeholder="Ex: Informatique" required />
+                    </div>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Nom -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Nom *</span>
-                    </label>
-                    <input type="text" name="nom" value="${employe.nom}" 
-                           class="input input-bordered w-full" 
-                           placeholder="Ex: Dupont" required />
-                </div>
-                
-                <!-- Prénom -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Prénom *</span>
-                    </label>
-                    <input type="text" name="prenom" value="${employe.prenom}" 
-                           class="input input-bordered w-full" 
-                           placeholder="Ex: Jean" required />
+            <div class="divider"></div>
+            
+            <!-- Section: Informations Personnelles -->
+            <div>
+                <h3 class="text-sm font-semibold text-base-content/60 uppercase tracking-wide mb-4">
+                    <i class="fas fa-user mr-1"></i>Informations Personnelles
+                </h3>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="label">
+                            <span class="label-text">Nom <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="nom" value="${employe.nom}" 
+                               class="input input-bordered w-full" 
+                               placeholder="Ex: Dupont" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="label">
+                            <span class="label-text">Prénom <span class="text-error">*</span></span>
+                        </label>
+                        <input type="text" name="prenom" value="${employe.prenom}" 
+                               class="input input-bordered w-full" 
+                               placeholder="Ex: Jean" required />
+                    </div>
                 </div>
             </div>
             
             <!-- Form Actions -->
-            <div class="flex justify-end gap-4 pt-4 border-t">
-                <a href="${pageContext.request.contextPath}/employes" class="btn btn-ghost">
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-base-200">
+                <a href="${pageContext.request.contextPath}/employes" class="btn btn-ghost order-2 sm:order-1">
                     Annuler
                 </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save mr-2"></i>
+                <button type="submit" class="btn btn-primary order-1 sm:order-2 gap-2">
+                    <i class="fas fa-save"></i>
                     ${isEdit ? 'Enregistrer les modifications' : 'Créer l\'employé'}
                 </button>
             </div>

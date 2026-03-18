@@ -14,9 +14,8 @@ import service.MaterielService;
 import service.MouvementService;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @WebServlet(name = "MaterielController", urlPatterns = {
@@ -32,7 +31,7 @@ public class MaterielController extends HttpServlet {
     @Inject
     private MouvementService mouvementService;
     
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -207,49 +206,49 @@ public class MaterielController extends HttpServlet {
     }
     
     private void createMateriel(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, ParseException {
-        
+            throws ServletException, IOException {
+
         Materiel materiel = new Materiel();
         materiel.setReference(request.getParameter("reference"));
         materiel.setDesignation(request.getParameter("designation"));
         materiel.setCategorie(request.getParameter("categorie"));
-        
+
         String dateAchatStr = request.getParameter("dateAchat");
         if (dateAchatStr != null && !dateAchatStr.isEmpty()) {
-            materiel.setDateAchat(dateFormat.parse(dateAchatStr));
+            materiel.setDateAchat(LocalDate.parse(dateAchatStr));
         }
-        
+
         materiel.setQuantiteStock(Integer.parseInt(request.getParameter("quantiteStock")));
         materiel.setDureeVieJours(Integer.parseInt(request.getParameter("dureeVieJours")));
         materiel.setStatut(StatutMateriel.EN_STOCK);
-        
+
         materielService.creerMateriel(materiel);
         setSuccessMessage(request, "Matériel créé avec succès");
         response.sendRedirect(request.getContextPath() + "/materiels");
     }
     
     private void updateMateriel(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException, ParseException {
-        
+            throws ServletException, IOException {
+
         Long id = Long.parseLong(request.getParameter("id"));
         Materiel materiel = materielService.getMateriel(id);
-        
+
         if (materiel == null) {
             setErrorMessage(request, "Matériel non trouvé");
             response.sendRedirect(request.getContextPath() + "/materiels");
             return;
         }
-        
+
         materiel.setDesignation(request.getParameter("designation"));
         materiel.setCategorie(request.getParameter("categorie"));
-        
+
         String dateAchatStr = request.getParameter("dateAchat");
         if (dateAchatStr != null && !dateAchatStr.isEmpty()) {
-            materiel.setDateAchat(dateFormat.parse(dateAchatStr));
+            materiel.setDateAchat(LocalDate.parse(dateAchatStr));
         }
-        
+
         materiel.setDureeVieJours(Integer.parseInt(request.getParameter("dureeVieJours")));
-        
+
         materielService.modifierMateriel(id, materiel);
         setSuccessMessage(request, "Matériel modifié avec succès");
         response.sendRedirect(request.getContextPath() + "/materiels");
