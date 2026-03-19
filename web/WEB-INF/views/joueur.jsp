@@ -63,7 +63,7 @@
         
         <!-- Footer -->
         <div class="text-center mt-6 text-base-content/40 text-sm">
-            <p>&copy; 2025 Mercato - Système de Gestion d'Inventaire</p>
+            <p>&copy; 2026 Mercato - Système de Gestion d'Inventaire</p>
         </div>
     </div>
 </body>

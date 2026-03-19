@@ -66,8 +66,8 @@ Liste tous les matériels ou filtre par catégorie/statut.
     "reference": "PC001",
     "designation": "PC Portable Dell Latitude",
     "categorie": "Informatique",
-    "dateIntroduction": "2025-01-15T00:00:00",
-    "dateAchat": "2025-01-10T00:00:00",
+    "dateIntroduction": "2026-01-15T00:00:00",
+    "dateAchat": "2026-01-10T00:00:00",
     "quantiteStock": 5,
     "dureeVieJours": 1095,
     "dateExpiration": "2028-01-10T00:00:00",
@@ -102,7 +102,7 @@ Crée un nouveau matériel.
   "reference": "PC002",
   "designation": "PC Portable HP ProBook",
   "categorie": "Informatique",
-  "dateAchat": "2025-03-10T00:00:00",
+  "dateAchat": "2026-03-10T00:00:00",
   "quantiteStock": 3,
   "dureeVieJours": 1095
 }
@@ -153,7 +153,7 @@ Retourne les matériels expirant dans les 60 jours.
     "id": 3,
     "reference": "IMP001",
     "designation": "Imprimante Laser",
-    "dateExpiration": "2025-04-15T00:00:00",
+    "dateExpiration": "2026-04-15T00:00:00",
     "joursRestants": 35
   }
 ]
@@ -215,7 +215,7 @@ Retourne l'historique des mouvements d'un matériel.
   {
     "id": 1,
     "type": "ENTREE",
-    "dateMouvement": "2025-01-15T10:30:00",
+    "dateMouvement": "2026-01-15T10:30:00",
     "quantite": 5,
     "commentaire": "Nouvelle livraison",
     "employe": null
@@ -223,7 +223,7 @@ Retourne l'historique des mouvements d'un matériel.
   {
     "id": 2,
     "type": "AFFECTATION",
-    "dateMouvement": "2025-02-01T14:20:00",
+    "dateMouvement": "2026-02-01T14:20:00",
     "quantite": 1,
     "commentaire": "Affectation",
     "employe": {
@@ -365,4 +365,4 @@ curl -X POST http://localhost:8080/mercato/api/materiels/1/affectation \
 ---
 
 **Version:** 1.0  
-**Dernière mise à jour:** Mars 2025
+**Dernière mise à jour:** Mars 2026

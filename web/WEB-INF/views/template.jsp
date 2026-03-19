@@ -12,12 +12,116 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="${contextPath}/css/custom.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
         html { scroll-behavior: smooth; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        ::-webkit-scrollbar { 
+            width: 8px; 
+            height: 8px; 
+        }
+        ::-webkit-scrollbar-track { 
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 4px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; 
+        }
+        
+        /* Smooth page transitions */
+        .page-transition {
+            animation: pageFadeIn 0.3s ease-out;
+        }
+        
+        @keyframes pageFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Sidebar active indicator */
+        .menu li a.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: #4f46e5;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .menu li a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: #6366f1;
+            border-radius: 0 2px 2px 0;
+        }
+        
+        /* Notification badge pulse */
+        .notification-badge {
+            animation: badgePulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            animation: toastSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Keyboard shortcut hints */
+        .kbd-shortcut {
+            font-family: monospace;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin-left: auto;
+            opacity: 0.6;
+        }
+        
+        /* Hover reveal for shortcuts */
+        .menu li a:hover .kbd-shortcut {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-base-200 min-h-screen">
@@ -26,59 +130,84 @@
         
         <div class="drawer-content flex flex-col min-h-screen">
             <!-- Navbar -->
-            <div class="navbar bg-base-100 shadow-sm border-b border-base-300 sticky top-0 z-30 px-4">
-                <div class="navbar-start">
+            <div class="navbar bg-base-100 shadow-sm border-b border-base-300 sticky top-0 z-30 px-4 lg:px-6">
+                <div class="navbar-start gap-4">
                     <label for="sidebar-toggle" class="btn btn-square btn-ghost lg:hidden">
                         <i class="fas fa-bars text-lg"></i>
                     </label>
                     <div class="hidden lg:flex text-sm breadcrumbs">
                         <ul>
-                            <li><a href="${contextPath}/dashboard"><i class="fas fa-home mr-1"></i>Accueil</a></li>
-                            <li class="font-medium">${pageTitle}</li>
+                            <li>
+                                <a href="${contextPath}/dashboard" class="hover:text-primary transition-colors">
+                                    <i class="fas fa-home mr-1"></i>Accueil
+                                </a>
+                            </li>
+                            <li class="font-medium text-primary">${pageTitle}</li>
                         </ul>
                     </div>
                 </div>
                 
                 <div class="navbar-center lg:hidden">
                     <a href="${contextPath}/dashboard" class="btn btn-ghost gap-2">
-                        <i class="fas fa-boxes text-primary"></i>
-                        <span class="font-bold">Mercato</span>
+                        <i class="fas fa-boxes text-primary text-xl"></i>
+                        <span class="font-bold text-lg">Mercato</span>
                     </a>
                 </div>
                 
                 <div class="navbar-end gap-2">
+                    <!-- Search Button (Quick Access) -->
+                    <button class="btn btn-ghost btn-circle hidden md:flex" onclick="document.getElementById('searchModal').showModal()" title="Rechercher (Ctrl+K)">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                    
                     <!-- Notifications -->
                     <div class="dropdown dropdown-end">
-                        <button tabindex="0" class="btn btn-ghost btn-circle">
+                        <button tabindex="0" class="btn btn-ghost btn-circle relative">
                             <div class="indicator">
                                 <i class="fas fa-bell text-lg"></i>
                                 <c:if test="${not empty sessionScope.alertCount and sessionScope.alertCount > 0}">
-                                    <span class="badge badge-xs badge-error indicator-item">${sessionScope.alertCount}</span>
+                                    <span class="badge badge-xs badge-error indicator-item notification-badge">${sessionScope.alertCount}</span>
                                 </c:if>
                             </div>
                         </button>
                         <div tabindex="0" class="dropdown-content z-50 menu p-2 shadow-xl bg-base-100 rounded-box w-80 mt-4 border border-base-300">
-                            <div class="px-3 py-2 border-b border-base-200">
+                            <div class="px-3 py-2 border-b border-base-200 flex justify-between items-center">
                                 <span class="font-semibold text-sm">Notifications</span>
+                                <c:if test="${not empty sessionScope.alertCount and sessionScope.alertCount > 0}">
+                                    <span class="badge badge-error badge-xs">${sessionScope.alertCount}</span>
+                                </c:if>
                             </div>
                             <c:choose>
                                 <c:when test="${empty sessionScope.notifications}">
-                                    <div class="px-3 py-4 text-sm text-base-content/60 text-center">
-                                        <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                    <div class="px-3 py-8 text-sm text-base-content/60 text-center">
+                                        <div class="w-12 h-12 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-inbox text-xl"></i>
+                                        </div>
                                         Aucune notification
                                     </div>
                                 </c:when>
                                 <c:otherwise>
-                                    <c:forEach items="${sessionScope.notifications}" var="notif" varStatus="status">
-                                        <c:if test="${status.index < 5}">
-                                            <li>
-                                                <a href="${contextPath}/materiels/${notif.materielId}" class="flex items-start gap-3 py-2">
-                                                    <i class="fas fa-exclamation-triangle text-warning mt-0.5"></i>
-                                                    <span class="line-clamp-2 text-sm">${notif.message}</span>
-                                                </a>
-                                            </li>
-                                        </c:if>
-                                    </c:forEach>
+                                    <div class="max-h-64 overflow-y-auto">
+                                        <c:forEach items="${sessionScope.notifications}" var="notif" varStatus="status">
+                                            <c:if test="${status.index < 5}">
+                                                <li>
+                                                    <a href="${contextPath}/materiels/${notif.materielId}" class="flex items-start gap-3 py-3 hover:bg-base-200 transition-colors">
+                                                        <div class="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
+                                                            <i class="fas fa-exclamation-triangle text-warning text-sm"></i>
+                                                        </div>
+                                                        <span class="line-clamp-2 text-sm">${notif.message}</span>
+                                                    </a>
+                                                </li>
+                                            </c:if>
+                                        </c:forEach>
+                                    </div>
+                                    <c:if test="${sessionScope.notifications.size() > 5}">
+                                        <div class="px-3 py-2 border-t border-base-200 text-center">
+                                            <a href="${contextPath}/materiels/alertes" class="text-sm text-primary hover:underline">
+                                                Voir toutes les notifications
+                                            </a>
+                                        </div>
+                                    </c:if>
                                 </c:otherwise>
                             </c:choose>
                         </div>
@@ -86,21 +215,52 @@
                     
                     <!-- User Menu -->
                     <div class="dropdown dropdown-end">
-                        <button tabindex="0" class="btn btn-ghost btn-circle avatar">
-                            <div class="w-9 h-9 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold text-sm">
+                        <button tabindex="0" class="btn btn-ghost btn-circle avatar hover:bg-base-200 transition-colors">
+                            <div class="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-md">
                                 ${sessionScope.username != null ? fn:toUpperCase(fn:substring(sessionScope.username, 0, 1)) : 'U'}
                             </div>
                         </button>
-                        <ul tabindex="0" class="dropdown-content z-50 menu p-2 shadow-xl bg-base-100 rounded-box w-52 mt-4 border border-base-300">
-                            <li class="menu-title px-3 py-2">
-                                <div>
-                                    <div class="font-semibold text-sm">${sessionScope.username}</div>
-                                    <div class="text-xs text-base-content/60">${sessionScope.role}</div>
+                        <ul tabindex="0" class="dropdown-content z-50 menu p-2 shadow-xl bg-base-100 rounded-box w-56 mt-4 border border-base-300">
+                            <li class="menu-title px-3 py-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                                        ${sessionScope.username != null ? fn:toUpperCase(fn:substring(sessionScope.username, 0, 1)) : 'U'}
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold text-sm">${sessionScope.username}</div>
+                                        <div class="text-xs text-base-content/60">${sessionScope.role}</div>
+                                    </div>
                                 </div>
                             </li>
-                            <li><a href="${contextPath}/dashboard"><i class="fas fa-tachometer-alt w-5"></i>Dashboard</a></li>
-                            <div class="divider my-1"></div>
-                            <li><a href="${contextPath}/logout" class="text-error"><i class="fas fa-sign-out-alt w-5"></i>Déconnexion</a></li>
+                            <li class="divider my-1"></li>
+                            <li>
+                                <a href="${contextPath}/dashboard" class="flex items-center gap-2">
+                                    <i class="fas fa-tachometer-alt w-5 text-primary"></i>
+                                    Dashboard
+                                    <span class="kbd-shortcut">D</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="${contextPath}/materiels" class="flex items-center gap-2">
+                                    <i class="fas fa-box w-5 text-success"></i>
+                                    Matériels
+                                    <span class="kbd-shortcut">M</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="${contextPath}/employes" class="flex items-center gap-2">
+                                    <i class="fas fa-users w-5 text-info"></i>
+                                    Employés
+                                    <span class="kbd-shortcut">E</span>
+                                </a>
+                            </li>
+                            <li class="divider my-1"></li>
+                            <li>
+                                <a href="${contextPath}/logout" class="text-error flex items-center gap-2">
+                                    <i class="fas fa-sign-out-alt w-5"></i>
+                                    Déconnexion
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -109,8 +269,8 @@
             <!-- Flash Messages -->
             <div class="px-4 lg:px-6 pt-4 space-y-2">
                 <c:if test="${not empty sessionScope.successMessage}">
-                    <div class="alert alert-success py-2 px-4 shadow-sm">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="alert alert-success py-2 px-4 shadow-sm animate-fade-in">
+                        <i class="fas fa-check-circle text-lg"></i>
                         <span class="text-sm">${sessionScope.successMessage}</span>
                         <button class="btn btn-ghost btn-xs btn-circle ml-auto" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
@@ -120,8 +280,8 @@
                 </c:if>
                 
                 <c:if test="${not empty sessionScope.errorMessage}">
-                    <div class="alert alert-error py-2 px-4 shadow-sm">
-                        <i class="fas fa-exclamation-circle"></i>
+                    <div class="alert alert-error py-2 px-4 shadow-sm animate-fade-in">
+                        <i class="fas fa-exclamation-circle text-lg"></i>
                         <span class="text-sm">${sessionScope.errorMessage}</span>
                         <button class="btn btn-ghost btn-xs btn-circle ml-auto" onclick="this.parentElement.remove()">
                             <i class="fas fa-times"></i>
@@ -132,14 +292,18 @@
             </div>
             
             <!-- Main Content -->
-            <main class="flex-1 p-4 lg:p-6">
+            <main class="flex-1 p-4 lg:p-6 page-transition">
                 <jsp:include page="${contentPage}" />
             </main>
             
             <!-- Footer -->
             <footer class="footer footer-center p-4 bg-base-100 border-t border-base-300 text-base-content/60 text-sm mt-auto">
                 <aside>
-                    <p>&copy; 2025 Mercato - Système de Gestion d'Inventaire</p>
+                    <p class="flex items-center gap-2">
+                        <i class="fas fa-boxes text-primary"></i>
+                        <span>&copy; 2026 Mercato - Système de Gestion d'Inventaire</span>
+                    </p>
+                    <p class="text-xs mt-1">M2 IRT AL - Jakarta EE 10</p>
                 </aside>
             </footer>
         </div>
@@ -150,11 +314,11 @@
             <aside class="w-72 bg-base-100 min-h-full border-r border-base-300 flex flex-col">
                 <!-- Brand -->
                 <div class="flex items-center gap-3 px-6 py-5 border-b border-base-300">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white text-xl shadow-lg">
                         <i class="fas fa-boxes"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-xl">Mercato</h1>
+                        <h1 class="font-bold text-xl tracking-tight">Mercato</h1>
                         <p class="text-xs text-base-content/50">Gestion d'Inventaire</p>
                     </div>
                 </div>
@@ -164,9 +328,10 @@
                     <ul class="menu menu-sm gap-1">
                         <!-- Dashboard -->
                         <li>
-                            <a href="${contextPath}/dashboard" class="${pageTitle == 'Dashboard' ? 'active' : ''} rounded-lg">
+                            <a href="${contextPath}/dashboard" class="${pageTitle == 'Dashboard' ? 'active' : ''} rounded-lg flex items-center gap-3">
                                 <i class="fas fa-tachometer-alt w-5 text-center"></i>
                                 <span>Dashboard</span>
+                                <span class="kbd-shortcut">D</span>
                             </a>
                         </li>
                         
@@ -174,20 +339,23 @@
                         
                         <!-- Materials -->
                         <li>
-                            <details ${pageTitle == 'Liste des Matériels' || pageTitle == 'Nouveau Matériel' || pageTitle == 'Détail Matériel' ? 'open' : ''}>
-                                <summary class="rounded-lg">
+                            <details ${pageTitle == 'Liste des Matériels' || pageTitle == 'Nouveau Matériel' || pageTitle == 'Détail Matériel' || pageTitle == 'Alertes' ? 'open' : ''}>
+                                <summary class="rounded-lg flex items-center gap-3">
                                     <i class="fas fa-box w-5 text-center"></i>
                                     <span>Matériels</span>
                                 </summary>
                                 <ul class="ml-4 mt-1">
                                     <li>
-                                        <a href="${contextPath}/materiels" class="${pageTitle == 'Liste des Matériels' ? 'active' : ''} rounded-lg">
-                                            <i class="fas fa-list w-4 text-center text-xs"></i>Liste
+                                        <a href="${contextPath}/materiels" class="${pageTitle == 'Liste des Matériels' ? 'active' : ''} rounded-lg flex items-center gap-2">
+                                            <i class="fas fa-list w-4 text-center text-xs"></i>
+                                            Liste
+                                            <span class="kbd-shortcut">M</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="${contextPath}/materiels/new" class="${pageTitle == 'Nouveau Matériel' ? 'active' : ''} rounded-lg">
-                                            <i class="fas fa-plus w-4 text-center text-xs"></i>Nouveau
+                                        <a href="${contextPath}/materiels/new" class="${pageTitle == 'Nouveau Matériel' ? 'active' : ''} rounded-lg flex items-center gap-2">
+                                            <i class="fas fa-plus w-4 text-center text-xs"></i>
+                                            Nouveau
                                         </a>
                                     </li>
                                 </ul>
@@ -196,13 +364,13 @@
                         
                         <!-- Alerts -->
                         <li>
-                            <a href="${contextPath}/materiels/alertes" class="${pageTitle == 'Alertes' ? 'active' : ''} rounded-lg justify-between">
+                            <a href="${contextPath}/materiels/alertes" class="${pageTitle == 'Alertes' ? 'active' : ''} rounded-lg justify-between flex items-center">
                                 <div class="flex items-center gap-3">
                                     <i class="fas fa-bell w-5 text-center"></i>
                                     <span>Alertes</span>
                                 </div>
                                 <c:if test="${not empty sessionScope.alertCount and sessionScope.alertCount > 0}">
-                                    <span class="badge badge-error badge-sm">${sessionScope.alertCount}</span>
+                                    <span class="badge badge-error badge-sm notification-badge">${sessionScope.alertCount}</span>
                                 </c:if>
                             </a>
                         </li>
@@ -212,19 +380,22 @@
                         <!-- Employees -->
                         <li>
                             <details ${pageTitle == 'Liste des Employés' || pageTitle == 'Nouvel Employé' || pageTitle == 'Détail Employé' ? 'open' : ''}>
-                                <summary class="rounded-lg">
+                                <summary class="rounded-lg flex items-center gap-3">
                                     <i class="fas fa-users w-5 text-center"></i>
                                     <span>Employés</span>
                                 </summary>
                                 <ul class="ml-4 mt-1">
                                     <li>
-                                        <a href="${contextPath}/employes" class="${pageTitle == 'Liste des Employés' ? 'active' : ''} rounded-lg">
-                                            <i class="fas fa-list w-4 text-center text-xs"></i>Liste
+                                        <a href="${contextPath}/employes" class="${pageTitle == 'Liste des Employés' ? 'active' : ''} rounded-lg flex items-center gap-2">
+                                            <i class="fas fa-list w-4 text-center text-xs"></i>
+                                            Liste
+                                            <span class="kbd-shortcut">E</span>
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="${contextPath}/employes/new" class="${pageTitle == 'Nouvel Employé' ? 'active' : ''} rounded-lg">
-                                            <i class="fas fa-plus w-4 text-center text-xs"></i>Nouveau
+                                        <a href="${contextPath}/employes/new" class="${pageTitle == 'Nouvel Employé' ? 'active' : ''} rounded-lg flex items-center gap-2">
+                                            <i class="fas fa-plus w-4 text-center text-xs"></i>
+                                            Nouveau
                                         </a>
                                     </li>
                                 </ul>
@@ -235,9 +406,9 @@
                 
                 <!-- Sidebar Footer -->
                 <div class="p-4 border-t border-base-300">
-                    <div class="flex items-center gap-3 p-3 bg-base-200 rounded-xl">
+                    <div class="flex items-center gap-3 p-3 bg-base-200 rounded-xl border border-base-200">
                         <div class="avatar">
-                            <div class="w-10 h-10 rounded-full bg-primary text-primary-content flex items-center justify-center font-bold">
+                            <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold shadow-md">
                                 ${sessionScope.username != null ? fn:toUpperCase(fn:substring(sessionScope.username, 0, 1)) : 'U'}
                             </div>
                         </div>
@@ -245,7 +416,7 @@
                             <p class="font-medium text-sm truncate">${sessionScope.username}</p>
                             <span class="badge badge-primary badge-sm">${sessionScope.role}</span>
                         </div>
-                        <a href="${contextPath}/logout" class="btn btn-ghost btn-circle btn-sm text-error" title="Déconnexion">
+                        <a href="${contextPath}/logout" class="btn btn-ghost btn-circle btn-sm text-error hover:bg-error/10 transition-colors" title="Déconnexion">
                             <i class="fas fa-sign-out-alt"></i>
                         </a>
                     </div>
@@ -254,6 +425,94 @@
         </div>
     </div>
     
+    <!-- Search Modal -->
+    <dialog id="searchModal" class="modal">
+        <div class="modal-box max-w-2xl">
+            <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+                <i class="fas fa-search text-primary"></i>
+                Rechercher
+            </h3>
+            <div class="form-control">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-base-content/40">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" 
+                           placeholder="Rechercher des matériels, employés..." 
+                           class="input input-bordered w-full pl-12 text-lg"
+                           id="globalSearch"
+                           autocomplete="off" />
+                    <span class="absolute inset-y-0 right-0 pr-4 flex items-center text-base-content/40 text-sm">
+                        <kbd class="kbd kbd-sm">ESC</kbd>
+                    </span>
+                </div>
+            </div>
+            <div class="mt-4">
+                <p class="text-sm text-base-content/60 mb-2">Suggestions rapides:</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="${contextPath}/materiels" class="badge badge-outline cursor-pointer hover:bg-primary hover:text-white transition-colors">
+                        <i class="fas fa-box mr-1"></i> Matériels
+                    </a>
+                    <a href="${contextPath}/employes" class="badge badge-outline cursor-pointer hover:bg-info hover:text-white transition-colors">
+                        <i class="fas fa-users mr-1"></i> Employés
+                    </a>
+                    <a href="${contextPath}/materiels/alertes" class="badge badge-outline cursor-pointer hover:bg-warning hover:text-white transition-colors">
+                        <i class="fas fa-bell mr-1"></i> Alertes
+                    </a>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+            <button>close</button>
+        </form>
+    </dialog>
+    
     <script src="${contextPath}/js/main.js"></script>
+    <script>
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchModal').showModal();
+                document.getElementById('globalSearch').focus();
+            }
+            
+            // Navigation shortcuts (when not in input)
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                switch(e.key.toLowerCase()) {
+                    case 'd':
+                        window.location.href = '${contextPath}/dashboard';
+                        break;
+                    case 'm':
+                        window.location.href = '${contextPath}/materiels';
+                        break;
+                    case 'e':
+                        window.location.href = '${contextPath}/employes';
+                        break;
+                }
+            }
+            
+            // ESC to close modal
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('searchModal');
+                if (modal.open) {
+                    modal.close();
+                }
+            }
+        });
+        
+        // Auto-hide flash messages after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.5s ease';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
+    </script>
 </body>
 </html>

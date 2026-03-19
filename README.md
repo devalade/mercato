@@ -255,7 +255,7 @@ mvn test
 
 ## 👥 Auteurs
 
-- **Développeur:** M2 IRT AL 2025-2026
+- **Développeur:** M2 IRT AL 2026-2026
 - **Projet:** TP Jakarta EE - Gestion d'Inventaire
 
 ## 📄 Licence
@@ -290,4 +290,4 @@ Pour toute question ou problème :
 ---
 
 **Version:** 1.0  
-**Date:** Mars 2025
+**Date:** Mars 2026
