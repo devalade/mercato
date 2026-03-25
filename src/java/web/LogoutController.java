@@ -1,32 +1,42 @@
 package web;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.mvc.Controller;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import java.net.URI;
 
-import java.io.IOException;
+@Controller
+@RequestScoped
+@Path("/logout")
+public class LogoutController extends BaseController {
 
-@WebServlet(name = "LogoutController", urlPatterns = {"/logout"})
-public class LogoutController extends HttpServlet {
+    @Context
+    private HttpServletRequest request;
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
+    /**
+     * Handle logout - GET request
+     */
+    @GET
+    public Response doLogout() {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
-        
-        response.sendRedirect(request.getContextPath() + "/login");
+
+        String contextPath = request.getContextPath();
+        URI loginUri = URI.create(contextPath + "/login");
+        return Response.seeOther(loginUri).build();
     }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        doGet(request, response);
+
+    /**
+     * Handle logout - POST request (form submission)
+     */
+    @POST
+    public Response doLogoutPost() {
+        return doLogout();
     }
 }

@@ -2,214 +2,176 @@ package web;
 
 import entity.Employe;
 import entity.Mouvement;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.mvc.Controller;
+import jakarta.mvc.Models;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import service.EmployeService;
 import service.MouvementService;
 
-import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "EmployeController", urlPatterns = {
-    "/employes", "/employes/new", "/employes/create",
-    "/employes/edit", "/employes/update"
-})
-public class EmployeController extends HttpServlet {
+@Controller
+@RequestScoped
+@Path("/employes")
+public class EmployeController extends BaseController {
 
     @Inject
     private EmployeService employeService;
-    
+
     @Inject
     private MouvementService mouvementService;
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        if (!isAuthenticated(request)) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+    @Inject
+    private Models models;
+
+    // ========== LIST EMPLOYES ==========
+
+    @GET
+    public Response listEmployes() {
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
         }
-        
-        String path = request.getServletPath();
-        String extraPath = request.getPathInfo();
-        
+
+        List<Employe> employes = employeService.listerEmployes();
+        models.put("employes", employes);
+        models.put("pageTitle", "Liste des Employés");
+        models.put("contentPage", "/WEB-INF/views/employes/list.jsp");
+
+        return Response.ok("/WEB-INF/views/template.jsp").build();
+    }
+
+    // ========== SHOW NEW FORM ==========
+
+    @GET
+    @Path("/new")
+    public Response showNewForm() {
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
+        }
+
+        models.put("pageTitle", "Nouvel Employé");
+        models.put("contentPage", "/WEB-INF/views/employes/form.jsp");
+
+        return Response.ok("/WEB-INF/views/template.jsp").build();
+    }
+
+    // ========== CREATE EMPLOYE ==========
+
+    @POST
+    @Path("/create")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response createEmploye(
+            @FormParam("matricule") String matricule,
+            @FormParam("nom") String nom,
+            @FormParam("prenom") String prenom,
+            @FormParam("service") String service) {
+
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
+        }
+
         try {
-            if ("/employes".equals(path) && extraPath == null) {
-                listEmployes(request, response);
-            } else if ("/employes/new".equals(path)) {
-                showNewForm(request, response);
-            } else if ("/employes/edit".equals(path) || (extraPath != null && extraPath.contains("/edit"))) {
-                showEditForm(request, response);
-            } else if (extraPath != null && extraPath.startsWith("/") && extraPath.length() > 1) {
-                showDetail(request, response);
-            } else {
-                listEmployes(request, response);
-            }
+            Employe employe = new Employe();
+            employe.setMatricule(matricule);
+            employe.setNom(nom);
+            employe.setPrenom(prenom);
+            employe.setService(service);
+
+            employeService.creerEmploye(employe);
+            setSuccessMessage("Employé créé avec succès");
+            return redirect("/employes");
         } catch (Exception e) {
-            setErrorMessage(request, "Erreur: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/employes");
+            setErrorMessage("Erreur: " + e.getMessage());
+            return redirect("/employes");
         }
     }
 
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        if (!isAuthenticated(request)) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
+    // ========== SHOW DETAIL ==========
+
+    @GET
+    @Path("/{id}")
+    public Response showDetail(@PathParam("id") Long id) {
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
         }
-        
-        String path = request.getServletPath();
-        
-        try {
-            if ("/employes/create".equals(path)) {
-                createEmploye(request, response);
-            } else if ("/employes/update".equals(path)) {
-                updateEmploye(request, response);
-            } else {
-                response.sendRedirect(request.getContextPath() + "/employes");
-            }
-        } catch (Exception e) {
-            setErrorMessage(request, "Erreur: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/employes");
-        }
-    }
-    
-    private boolean isAuthenticated(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        return session != null && session.getAttribute("username") != null;
-    }
-    
-    private void setSuccessMessage(HttpServletRequest request, String message) {
-        HttpSession session = request.getSession();
-        session.setAttribute("successMessage", message);
-    }
-    
-    private void setErrorMessage(HttpServletRequest request, String message) {
-        HttpSession session = request.getSession();
-        session.setAttribute("errorMessage", message);
-    }
-    
-    private void listEmployes(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        List<Employe> employes = employeService.listerEmployes();
-        request.setAttribute("employes", employes);
-        request.setAttribute("pageTitle", "Liste des Employés");
-        request.setAttribute("contentPage", "/WEB-INF/views/employes/list.jsp");
-        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
-    }
-    
-    private void showNewForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.setAttribute("pageTitle", "Nouvel Employé");
-        request.setAttribute("contentPage", "/WEB-INF/views/employes/form.jsp");
-        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
-    }
-    
-    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        Long id = extractIdFromPath(request);
-        if (id == null) {
-            setErrorMessage(request, "ID d'employé invalide");
-            response.sendRedirect(request.getContextPath() + "/employes");
-            return;
-        }
-        
+
         Employe employe = employeService.getEmploye(id);
         if (employe == null) {
-            setErrorMessage(request, "Employé non trouvé");
-            response.sendRedirect(request.getContextPath() + "/employes");
-            return;
+            setErrorMessage("Employé non trouvé");
+            return redirect("/employes");
         }
-        
-        request.setAttribute("employe", employe);
-        request.setAttribute("pageTitle", "Modifier Employé");
-        request.setAttribute("contentPage", "/WEB-INF/views/employes/form.jsp");
-        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
-    }
-    
-    private void showDetail(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        Long id = extractIdFromPath(request);
-        if (id == null) {
-            setErrorMessage(request, "ID d'employé invalide");
-            response.sendRedirect(request.getContextPath() + "/employes");
-            return;
-        }
-        
-        Employe employe = employeService.getEmploye(id);
-        if (employe == null) {
-            setErrorMessage(request, "Employé non trouvé");
-            response.sendRedirect(request.getContextPath() + "/employes");
-            return;
-        }
-        
+
         List<Mouvement> mouvements = mouvementService.getMouvementsParEmploye(id);
-        
-        request.setAttribute("employe", employe);
-        request.setAttribute("mouvements", mouvements);
-        request.setAttribute("pageTitle", "Détail Employé");
-        request.setAttribute("contentPage", "/WEB-INF/views/employes/detail.jsp");
-        request.getRequestDispatcher("/WEB-INF/views/template.jsp").forward(request, response);
+
+        models.put("employe", employe);
+        models.put("mouvements", mouvements);
+        models.put("pageTitle", "Détail Employé");
+        models.put("contentPage", "/WEB-INF/views/employes/detail.jsp");
+
+        return Response.ok("/WEB-INF/views/template.jsp").build();
     }
-    
-    private void createEmploye(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        Employe employe = new Employe();
-        employe.setMatricule(request.getParameter("matricule"));
-        employe.setNom(request.getParameter("nom"));
-        employe.setPrenom(request.getParameter("prenom"));
-        employe.setService(request.getParameter("service"));
-        
-        employeService.creerEmploye(employe);
-        setSuccessMessage(request, "Employé créé avec succès");
-        response.sendRedirect(request.getContextPath() + "/employes");
-    }
-    
-    private void updateEmploye(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        Long id = Long.parseLong(request.getParameter("id"));
+
+    // ========== SHOW EDIT FORM ==========
+
+    @GET
+    @Path("/{id}/edit")
+    public Response showEditForm(@PathParam("id") Long id) {
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
+        }
+
         Employe employe = employeService.getEmploye(id);
-        
         if (employe == null) {
-            setErrorMessage(request, "Employé non trouvé");
-            response.sendRedirect(request.getContextPath() + "/employes");
-            return;
+            setErrorMessage("Employé non trouvé");
+            return redirect("/employes");
         }
-        
-        employe.setNom(request.getParameter("nom"));
-        employe.setPrenom(request.getParameter("prenom"));
-        employe.setService(request.getParameter("service"));
-        
-        // Note: Matricule typically shouldn't be changed
-        
-        employeService.updateEmploye(employe);
-        setSuccessMessage(request, "Employé modifié avec succès");
-        response.sendRedirect(request.getContextPath() + "/employes");
+
+        models.put("employe", employe);
+        models.put("pageTitle", "Modifier Employé");
+        models.put("contentPage", "/WEB-INF/views/employes/form.jsp");
+
+        return Response.ok("/WEB-INF/views/template.jsp").build();
     }
-    
-    private Long extractIdFromPath(HttpServletRequest request) {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo != null && pathInfo.length() > 1) {
-            String[] parts = pathInfo.substring(1).split("/");
-            try {
-                return Long.parseLong(parts[0]);
-            } catch (NumberFormatException e) {
-                return null;
-            }
+
+    // ========== UPDATE EMPLOYE ==========
+
+    @POST
+    @Path("/update")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response updateEmploye(
+            @FormParam("id") Long id,
+            @FormParam("nom") String nom,
+            @FormParam("prenom") String prenom,
+            @FormParam("service") String service) {
+
+        Response authResponse = checkAuthentication();
+        if (authResponse != null) {
+            return authResponse;
         }
-        return null;
+
+        Employe employe = employeService.getEmploye(id);
+        if (employe == null) {
+            setErrorMessage("Employé non trouvé");
+            return redirect("/employes");
+        }
+
+        employe.setNom(nom);
+        employe.setPrenom(prenom);
+        employe.setService(service);
+
+        // Note: Matricule typically shouldn't be changed
+
+        employeService.updateEmploye(employe);
+        setSuccessMessage("Employé modifié avec succès");
+        return redirect("/employes");
     }
 }

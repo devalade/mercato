@@ -1,4 +1,5 @@
 <%@ tag language="java" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ attribute name="href" required="true" type="java.lang.String" %>
 <%@ attribute name="variant" required="false" type="java.lang.String" %>
 <%@ attribute name="icon" required="false" type="java.lang.String" %>
