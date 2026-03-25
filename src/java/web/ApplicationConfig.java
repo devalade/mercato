@@ -44,6 +44,8 @@ public class ApplicationConfig extends jakarta.ws.rs.core.Application {
         resources.add(MaterielResource.class);
         resources.add(MouvementResource.class);
         resources.add(EmployeResource.class);
+        resources.add(SseNotificationResource.class);
+        resources.add(ExportResource.class);
     }
 
     /**

@@ -15,6 +15,27 @@
         </div>
     </div>
     <div class="page-header-actions">
+        <div class="dropdown dropdown-end">
+            <label tabindex="0" class="btn btn-ghost btn-sm gap-2">
+                <i class="fas fa-download"></i>
+                <span class="hidden sm:inline">Exporter</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+            </label>
+            <ul tabindex="0" class="dropdown-content z-30 menu p-2 shadow-lg bg-base-100 rounded-box w-40 border border-base-300">
+                <li>
+                    <a href="${pageContext.request.contextPath}/api/export/csv" class="flex items-center gap-2">
+                        <i class="fas fa-file-csv text-success"></i>
+                        Exporter CSV
+                    </a>
+                </li>
+                <li>
+                    <a href="${pageContext.request.contextPath}/api/export/pdf" class="flex items-center gap-2">
+                        <i class="fas fa-file-pdf text-error"></i>
+                        Exporter PDF
+                    </a>
+                </li>
+            </ul>
+        </div>
         <a href="${pageContext.request.contextPath}/materiels/new" class="btn btn-primary btn-sm gap-2 btn-ripple">
             <i class="fas fa-plus"></i>
             <span class="hidden sm:inline">Nouveau</span>

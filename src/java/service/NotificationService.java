@@ -2,20 +2,21 @@ package service;
 
 import entity.Materiel;
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
-import jakarta.ejb.Timeout;
-import jakarta.ejb.Timer;
-import jakarta.ejb.TimerConfig;
-import jakarta.ejb.TimerService;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.ws.rs.sse.Sse;
+import jakarta.ws.rs.sse.SseEventSink;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,8 +30,8 @@ public class NotificationService implements Serializable {
     @Inject
     private MaterielService materielService;
 
-    @Resource
-    private TimerService timerService;
+    private transient List<SseEventSink> clients = new CopyOnWriteArrayList<>();
+    private transient Sse sseInstance;
 
     private List<AlertNotification> notifications = new ArrayList<>();
 
@@ -40,11 +41,42 @@ public class NotificationService implements Serializable {
         try {
             verifierExpirations();
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Impossible de vérifier les expirations au démarrage: {0}", e.getMessage());
+            LOGGER.log(Level.WARNING, "Impossible devérifier les expirations au démarrage: {0}", e.getMessage());
         }
     }
 
-    @Schedule(hour = "8", minute = "0", persistent = false)
+    public void addClient(SseEventSink eventSink, Sse sse) {
+        clients.add(eventSink);
+        this.sseInstance = sse;
+        LOGGER.info("Client SSE ajouté. Total clients: " + clients.size());
+        
+        try {
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            for (AlertNotification alert : notifications) {
+                arrayBuilder.add(toJson(alert));
+            }
+            
+            if (eventSink.isClosed()) {
+                clients.remove(eventSink);
+                return;
+            }
+            
+            eventSink.send(sse.newEventBuilder()
+                    .name("init")
+                    .data(arrayBuilder.build().toString())
+                    .build());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Erreur lors de l'envoi init au client: {0}", e.getMessage());
+            clients.remove(eventSink);
+        }
+    }
+
+    public void removeClient(SseEventSink eventSink) {
+        clients.remove(eventSink);
+        LOGGER.info("Client SSE retiré. Total clients: " + clients.size());
+    }
+
+    @Schedule(minute = "*/1", hour = "*", persistent = false)
     public void verifierExpirations() {
         LOGGER.info("Vérification des expirations à " + new Date());
         
@@ -71,6 +103,54 @@ public class NotificationService implements Serializable {
         }
         
         LOGGER.info("Vérification terminée. " + notifications.size() + " alerte(s) trouvée(s)");
+        
+        broadcastToClients();
+    }
+
+    private void broadcastToClients() {
+        if (clients.isEmpty()) {
+            return;
+        }
+        try {
+            JsonArrayBuilder arrayBuilder = Json.createArrayBuilder();
+            for (AlertNotification alert : notifications) {
+                arrayBuilder.add(toJson(alert));
+            }
+            
+            String jsonData = arrayBuilder.build().toString();
+            
+            List<SseEventSink> closedClients = new ArrayList<>();
+            
+            for (SseEventSink client : clients) {
+                try {
+                    if (!client.isClosed()) {
+                        client.send(sseInstance.newEventBuilder()
+                                .name("alertes")
+                                .data(jsonData)
+                                .build());
+                    } else {
+                        closedClients.add(client);
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.FINE, "Client SSE déconnecté: {0}", e.getMessage());
+                    closedClients.add(client);
+                }
+            }
+            
+            closedClients.forEach(clients::remove);
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Erreur lors dubroadcast SSE: {0}", e.getMessage());
+        }
+    }
+
+    private JsonObjectBuilder toJson(AlertNotification alert) {
+        return Json.createObjectBuilder()
+                .add("materielId", alert.getMaterielId())
+                .add("reference", alert.getReference())
+                .add("message", alert.getMessage())
+                .add("niveau", alert.getNiveau())
+                .add("dateAlert", alert.getDateAlert().getTime());
     }
 
     public List<AlertNotification> getNotifications() {

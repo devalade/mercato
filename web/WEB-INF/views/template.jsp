@@ -469,6 +469,120 @@
     
     <script src="${contextPath}/js/main.js"></script>
     <script>
+        // SSE Notifications
+        (function() {
+            const EventSource = window.EventSource;
+            if (!EventSource) {
+                console.log('SSE not supported by browser');
+                return;
+            }
+            
+            let reconnectAttempts = 0;
+            const maxReconnectAttempts = 5;
+            let eventSource = null;
+            
+            function connectSSE() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                eventSource = new EventSource('${contextPath}/api/sse/alertes');
+                
+                eventSource.onopen = function() {
+                    console.log('SSE connection established');
+                    reconnectAttempts = 0;
+                };
+                
+                eventSource.addEventListener('init', function(e) {
+                    console.log('SSE init received');
+                    updateNotifications(JSON.parse(e.data));
+                });
+                
+                eventSource.addEventListener('alertes', function(e) {
+                    console.log('SSE alertes update received');
+                    updateNotifications(JSON.parse(e.data));
+                    showToastNotification();
+                });
+                
+                eventSource.onerror = function(e) {
+                    console.log('SSE connection error');
+                    eventSource.close();
+                    
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        reconnectAttempts++;
+                        const delay = Math.min(1000* Math.pow(2, reconnectAttempts), 30000);
+                        console.log('SSE reconnecting in ' + delay + 'ms (attempt ' + reconnectAttempts + ')');
+                        setTimeout(connectSSE, delay);
+                    }
+                };
+            }
+            
+            function updateNotifications(alertes) {
+                // Update session storage for notification count
+                if (alertes && alertes.length > 0) {
+                    sessionStorage.setItem('alertCount', alertes.length);
+                    sessionStorage.setItem('notifications', JSON.stringify(alertes));
+                    updateNotificationBadge(alertes.length);
+                } else {
+                    sessionStorage.removeItem('alertCount');
+                    sessionStorage.removeItem('notifications');
+                    updateNotificationBadge(0);
+                }
+            }
+            
+            function updateNotificationBadge(count) {
+                const badges = document.querySelectorAll('.notification-badge');
+                badges.forEach(function(badge) {
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                });
+            }
+            
+            function showToastNotification() {
+                const count = sessionStorage.getItem('alertCount') || '0';
+                if (parseInt(count) > 0) {
+                    const container = document.querySelector('.toast-container') || createToastContainer();
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-end';
+                    toast.innerHTML = 
+                        '<div class="alert alert-warning shadow-lg animate-pulse">' +
+                            '<i class="fas fa-exclamation-triangle"></i>' +
+                            '<span>' + count + ' matériel(s) expire(nt) bientôt!</span>' +
+                            '<a href="${contextPath}/materiels/alertes" class="btn btn-xs btn-ghost">Voir</a>' +
+                        '</div>';
+                    container.appendChild(toast);
+                    
+                    setTimeout(function() {
+                        toast.remove();
+                    }, 5000);
+                }
+            }
+            
+            function createToastContainer() {
+                const container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+                return container;
+            }
+            
+            // Initial connection
+            connectSSE();
+            
+            // Restore from session on page load
+            const savedAlerts = sessionStorage.getItem('notifications');
+            if (savedAlerts) {
+                try {
+                    updateNotifications(JSON.parse(savedAlerts));
+                } catch (e) {
+                    console.error('Error parsing saved notifications:', e);
+                }
+            }
+        })();
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             // Ctrl/Cmd + K for search
